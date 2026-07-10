@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #07070d;
+  --foreground: #f8fafc;
 }
 
 @theme inline {
@@ -12,15 +12,154 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #07070d;
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(217, 70, 239, 0.2), transparent 30rem),
+    radial-gradient(circle at 78% 4%, rgba(34, 211, 238, 0.18), transparent 28rem),
+    linear-gradient(135deg, #07070d 0%, #11101a 45%, #080a12 100%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.35);
+  color: #ffffff;
+}
+
+.noise-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.field {
+  min-height: 46px;
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(0, 0, 0, 0.28);
+  padding: 0.75rem 0.9rem;
+  color: #f8fafc;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.field::placeholder {
+  color: rgba(148, 163, 184, 0.88);
+}
+
+.field:focus {
+  border-color: rgba(34, 211, 238, 0.72);
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+}
+
+.primary-button,
+.icon-button,
+.swipe-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 16px;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.primary-button {
+  min-height: 46px;
+  background: linear-gradient(135deg, #67e8f9, #f0abfc);
+  color: #05050a;
+  box-shadow: 0 14px 36px rgba(217, 70, 239, 0.18);
+}
+
+.icon-button {
+  min-width: 46px;
+  min-height: 46px;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  background: rgba(103, 232, 249, 0.12);
+  color: #cffafe;
+}
+
+.swipe-action {
+  min-height: 54px;
+  width: 100%;
+  border-width: 1px;
+  padding: 0 1rem;
+  font-size: 0.95rem;
+}
+
+.primary-button:hover,
+.icon-button:hover,
+.swipe-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px rgba(34, 211, 238, 0.12);
+}
+
+.primary-button:active,
+.icon-button:active,
+.swipe-action:active {
+  transform: translateY(0);
+}
+
+.swipe-card {
+  will-change: transform, opacity;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(7, 7, 13, 0.9);
+  border-radius: 999px;
+  background: rgba(103, 232, 249, 0.42);
+}
+
+@media (max-width: 640px) {
+  .swipe-action {
+    min-height: 48px;
+  }
 }
