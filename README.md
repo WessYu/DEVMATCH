@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevMatch
 
-## Getting Started
+DevMatch é um Tinder de devs com portfólio interativo, match para empresas, chat e leitura de repositórios reais do GitHub.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- GSAP
+- Lucide React
+- Route Handlers como backend inicial
+
+## O que já está implementado
+
+- Login/cadastro leve para empresa ou dev via `/api/auth`
+- Perfil público editável no navegador
+- Deck de swipe com like/dislike
+- Filtros por stack
+- Ranking de compatibilidade por vaga
+- Lista de matches via `/api/matches`
+- Chat entre empresa e dev via `/api/chat`
+- Proxy de GitHub via `/api/github`
+- Layout dark cyberpunk com glassmorphism, neon roxo, ciano e motion com GSAP
+- Build pronto para Vercel
+
+## Rodar localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validar produção
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+## Rotas internas
 
-To learn more about Next.js, take a look at the following resources:
+- `GET /api/profiles`: perfis de devs com compatibilidade
+- `POST /api/auth`: cria uma sessão leve para empresa ou dev
+- `POST /api/matches`: recebe likes e retorna matches
+- `POST /api/chat`: retorna uma resposta simulada do dev
+- `GET /api/github?user=vercel`: importa repositórios públicos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Próximos passos para virar SaaS real
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Trocar sessão leve por Firebase Auth ou JWT assinado
+- Persistir perfis, matches e chat em MongoDB, Firestore ou Postgres
+- Adicionar upload real de foto para devs
+- Criar painel admin para aprovar empresas e moderar perfis
+- Ligar um modelo de IA externo ao motor de compatibilidade
 
-## Deploy on Vercel
+## Nota de audit
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`npm audit` reporta 2 vulnerabilidades moderadas transitivas em `postcss` dentro do `next@16.2.10`. O fix automático sugerido pelo npm força downgrade para `next@9.3.3`, então foi mantida a versão moderna e compatível com o App Router.
