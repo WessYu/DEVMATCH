@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import {
@@ -130,6 +130,11 @@ export default function Home() {
   const [chatDraft, setChatDraft] = useState("");
   const [chatByMatch, setChatByMatch] = useState<Record<string, ChatMessage[]>>({});
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const accessRef = useRef<HTMLFormElement | null>(null);
+  const deckRef = useRef<HTMLElement | null>(null);
+  const matchesRef = useRef<HTMLElement | null>(null);
+  const githubRef = useRef<HTMLElement | null>(null);
+  const profileRef = useRef<HTMLElement | null>(null);
 
   const candidates = useMemo(() => {
     return profiles.filter((profile) => {
@@ -379,6 +384,20 @@ export default function Home() {
     }
   }
 
+  function scrollToSection(target: React.RefObject<HTMLElement | HTMLFormElement | null>) {
+    target.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+
+  function focusAccess() {
+    scrollToSection(accessRef);
+    window.setTimeout(() => {
+      accessRef.current?.querySelector("input")?.focus();
+    }, 260);
+  }
+
   return (
     <main className="min-h-screen bg-[#121313] px-3 py-4 text-[#f4f1eb] sm:px-5 lg:px-8">
       <section className="mx-auto flex w-full max-w-[1380px] flex-col gap-4">
@@ -389,13 +408,20 @@ export default function Home() {
               <span className="text-sm font-black tracking-[-0.02em] text-[#f4f1eb]">DevMatch</span>
             </div>
             <nav className="hidden items-center gap-1 md:flex">
-              {["Deck", "Matches", "GitHub", "Perfil"].map((item) => (
-                <button className="nav-tab" key={item} type="button">
-                  {item}
-                </button>
-              ))}
+              <button className="nav-tab" onClick={() => scrollToSection(deckRef)} type="button">
+                Deck
+              </button>
+              <button className="nav-tab" onClick={() => scrollToSection(matchesRef)} type="button">
+                Matches
+              </button>
+              <button className="nav-tab" onClick={() => scrollToSection(githubRef)} type="button">
+                GitHub
+              </button>
+              <button className="nav-tab" onClick={() => scrollToSection(profileRef)} type="button">
+                Perfil
+              </button>
             </nav>
-            <button className="nav-cta" type="button">
+            <button className="nav-cta" onClick={focusAccess} type="button">
               {session ? session.name : "Registrar acesso"}
             </button>
           </header>
@@ -440,7 +466,7 @@ export default function Home() {
               </div>
 
               <div className="mt-8 grid gap-3 md:grid-cols-2">
-                <form className="compact-box space-y-2" onSubmit={handleAuth}>
+                <form className="compact-box space-y-2 scroll-mt-4" onSubmit={handleAuth} ref={accessRef}>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold">Acesso</span>
                     <UserRoundPlus className="size-4" />
@@ -487,7 +513,10 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="relative min-h-[620px] overflow-hidden rounded-xl bg-[#d9d3c8] text-[#111111]">
+            <section
+              className="relative min-h-[620px] scroll-mt-4 overflow-hidden rounded-xl bg-[#d9d3c8] text-[#111111]"
+              ref={deckRef}
+            >
               {currentDeveloper ? (
                 <div ref={cardRef} className="h-full">
                   <Image
@@ -565,7 +594,7 @@ export default function Home() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
-          <DarkPanel title="Matches" icon={<MessageCircle className="size-5" />}>
+          <DarkPanel ref={matchesRef} title="Matches" icon={<MessageCircle className="size-5" />}>
             <div className="space-y-2">
               {matches.length ? (
                 matches.map((match) => (
@@ -588,7 +617,7 @@ export default function Home() {
             </div>
           </DarkPanel>
 
-          <DarkPanel title="GitHub" icon={<GitPullRequest className="size-5" />}>
+          <DarkPanel ref={githubRef} title="GitHub" icon={<GitPullRequest className="size-5" />}>
             <div className="flex gap-2">
               <input
                 className="field"
@@ -645,7 +674,7 @@ export default function Home() {
           </DarkPanel>
         </div>
 
-        <DarkPanel title="Perfil publico" icon={<UserRoundPlus className="size-5" />}>
+        <DarkPanel ref={profileRef} title="Perfil publico" icon={<UserRoundPlus className="size-5" />}>
           <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]">
             <input
               className="field"
@@ -678,17 +707,17 @@ function Metric({ value, label }: { value: string | number; label: string }) {
   );
 }
 
-function DarkPanel({
-  children,
-  icon,
-  title,
-}: {
+const DarkPanel = forwardRef<HTMLElement, {
   children: React.ReactNode;
   icon: React.ReactNode;
   title: string;
-}) {
+}>(
+  function DarkPanel({ children, icon, title }, ref) {
   return (
-    <section className="motion-in rounded-xl border border-white/10 bg-[#191b1f] p-4 shadow-xl shadow-black/20">
+    <section
+      className="motion-in scroll-mt-4 rounded-xl border border-white/10 bg-[#191b1f] p-4 shadow-xl shadow-black/20"
+      ref={ref}
+    >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-white">{title}</h2>
         <span className="text-cyan-200">{icon}</span>
@@ -696,4 +725,5 @@ function DarkPanel({
       {children}
     </section>
   );
-}
+  },
+);

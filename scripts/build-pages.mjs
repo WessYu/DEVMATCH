@@ -3,10 +3,19 @@ import { spawnSync } from "node:child_process";
 
 const apiDir = "src/app/api";
 const disabledApiDir = "src/app/_api_disabled_for_pages";
+const runtimeBuildDir = ".next";
+const runtimeBuildBackupDir = ".next-runtime-backup";
 let moved = false;
+let backedUpRuntimeBuild = false;
 
 try {
-  rmSync(".next", { force: true, recursive: true });
+  rmSync(".next-pages", { force: true, recursive: true });
+  rmSync(runtimeBuildBackupDir, { force: true, recursive: true });
+
+  if (existsSync(runtimeBuildDir)) {
+    renameSync(runtimeBuildDir, runtimeBuildBackupDir);
+    backedUpRuntimeBuild = true;
+  }
 
   if (existsSync(apiDir)) {
     renameSync(apiDir, disabledApiDir);
@@ -33,5 +42,11 @@ try {
 } finally {
   if (moved && existsSync(disabledApiDir)) {
     renameSync(disabledApiDir, apiDir);
+  }
+
+  rmSync(runtimeBuildDir, { force: true, recursive: true });
+
+  if (backedUpRuntimeBuild && existsSync(runtimeBuildBackupDir)) {
+    renameSync(runtimeBuildBackupDir, runtimeBuildDir);
   }
 }
