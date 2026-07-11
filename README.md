@@ -11,6 +11,7 @@ DevMatch e um Tinder de devs com portfolio interativo, match para empresas, chat
 - Lucide React
 - Route Handlers como backend inicial
 - Export estatico para GitHub Pages
+- Neon Postgres quando `DATABASE_URL` estiver configurada
 
 ## O que ja esta implementado
 
@@ -24,6 +25,7 @@ DevMatch e um Tinder de devs com portfolio interativo, match para empresas, chat
 - Leitura de repositorios do GitHub
 - Layout dark cyberpunk com glassmorphism, neon roxo, ciano e motion com GSAP
 - Workflow de deploy para GitHub Pages
+- Backend pronto para Vercel com Neon
 
 ## Rodar localmente
 
@@ -40,6 +42,19 @@ Acesse `http://localhost:3000`.
 npm run lint
 npm run build
 ```
+
+## Backend Neon no Vercel
+
+Configure a variavel `DATABASE_URL` no Vercel usando a connection string do Neon. O valor nao deve ser commitado.
+
+No primeiro request com banco disponivel, o app cria automaticamente:
+
+- `devmatch_users`
+- `devmatch_profiles`
+- `devmatch_matches`
+- `devmatch_messages`
+
+Os perfis iniciais tambem sao sincronizados no banco. Sem `DATABASE_URL`, o app continua funcionando com fallback local.
 
 ## Gerar build para GitHub Pages localmente
 
@@ -82,4 +97,14 @@ https://SEU_USUARIO.github.io/DEVMATCH/
 - `POST /api/chat`: retorna uma resposta simulada do dev
 - `GET /api/github?user=vercel`: importa repositorios publicos
 
+## Proximos passos para virar SaaS real
 
+- Trocar sessao leve por Firebase Auth ou JWT assinado
+- Persistir perfis, matches e chat em MongoDB, Firestore ou Postgres
+- Adicionar upload real de foto para devs
+- Criar painel admin para aprovar empresas e moderar perfis
+- Conectar um motor externo ao ranking de compatibilidade
+
+## Nota de audit
+
+`npm audit` reporta 2 vulnerabilidades moderadas transitivas em `postcss` dentro do `next@16.2.10`. O fix automatico sugerido pelo npm forca downgrade para `next@9.3.3`, entao foi mantida a versao moderna e compativel com o App Router.

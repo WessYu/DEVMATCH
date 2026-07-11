@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { saveUserToDatabase } from "@/lib/db";
 
 export const dynamic = "force-static";
 
@@ -6,7 +7,8 @@ export async function POST(request: Request) {
   const payload = await request.json();
   const email = String(payload.email ?? "").trim().toLowerCase();
   const name = String(payload.name ?? "").trim();
-  const mode = payload.mode === "developer" ? "developer" : "company";
+  const mode: "company" | "developer" =
+    payload.mode === "developer" ? "developer" : "company";
 
   if (!email.includes("@")) {
     return NextResponse.json(
@@ -18,12 +20,16 @@ export async function POST(request: Request) {
   const displayName =
     name || email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+  const user = {
+    email,
+    name: displayName,
+    mode,
+  };
+
+  await saveUserToDatabase(user);
+
   return NextResponse.json({
     token: Buffer.from(`${email}:${Date.now()}`).toString("base64url"),
-    user: {
-      email,
-      name: displayName,
-      mode,
-    },
+    user,
   });
 }

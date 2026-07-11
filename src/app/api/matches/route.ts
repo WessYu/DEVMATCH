@@ -1,11 +1,25 @@
 import { NextResponse } from "next/server";
 import { companyProfile, developers, scoreDeveloper } from "@/lib/devmatch-data";
+import { saveMatchesToDatabase } from "@/lib/db";
 
 export const dynamic = "force-static";
 
 export async function POST(request: Request) {
   const payload = await request.json();
   const likedIds = Array.isArray(payload.likedIds) ? payload.likedIds : [];
+  const companyEmail =
+    typeof payload.companyEmail === "string" && payload.companyEmail.includes("@")
+      ? payload.companyEmail
+      : "demo@devmatch.local";
+
+  const databaseMatches = await saveMatchesToDatabase({
+    companyEmail,
+    likedIds,
+  });
+
+  if (databaseMatches) {
+    return NextResponse.json({ matches: databaseMatches });
+  }
 
   const matches = developers
     .filter((developer) => likedIds.includes(developer.id))

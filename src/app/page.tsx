@@ -12,7 +12,6 @@ import {
   MessageCircle,
   Search,
   ShieldCheck,
-  Sparkles,
   UserRoundPlus,
   X,
   Zap,
@@ -68,22 +67,22 @@ const fallbackProfiles: EnrichedDeveloper[] = fallbackDevelopers.map((developer)
   ...developer,
   compatibility: {
     score: 72,
-    reasons: ["stack coerente", "projetos claros", "boa leitura de produto"],
+    reasons: ["stack alinhada", "projetos claros", "boa leitura de produto"],
   },
 }));
 
 const initialPortfolio = {
   name: "Seu nome",
-  bio: "Descreva o tipo de produto que você gosta de construir, seu ritmo de trabalho e a stack que domina.",
+  bio: "Conte que tipo de produto voce gosta de construir, como trabalha em time e qual problema tecnico resolveu bem.",
   skills: "React, Next.js, Node, TypeScript",
-  project: "Cole aqui seu melhor projeto com link, contexto e decisão técnica importante.",
+  project: "Cole seu melhor projeto com link, contexto, stack e decisao tecnica principal.",
 };
 
 const staticChatReplies = [
-  "Legal. Tenho disponibilidade para uma call técnica esta semana.",
-  "Esse desafio parece bem alinhado com meu último projeto.",
-  "Posso mandar um recorte do código e explicar as decisões de arquitetura.",
-  "Curti a vaga. Como vocês medem sucesso nos primeiros 90 dias?",
+  "Legal. Tenho agenda para uma conversa tecnica esta semana.",
+  "Esse desafio conversa bastante com meu ultimo projeto.",
+  "Posso mandar um trecho de codigo e explicar as decisoes que tomei.",
+  "Curti a vaga. Como voces medem sucesso nos primeiros 90 dias?",
 ];
 
 function normalizeDisplayName(name: FormDataEntryValue | null, email: string) {
@@ -109,7 +108,7 @@ export default function Home() {
   const [likedIds, setLikedIds] = useState<string[]>([]);
   const [passedIds, setPassedIds] = useState<string[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [activeMatchId, setActiveMatchId] = useState<string>("");
+  const [activeMatchId, setActiveMatchId] = useState("");
   const [session, setSession] = useState<UserSession | null>(() => {
     if (typeof window === "undefined") return null;
 
@@ -121,7 +120,7 @@ export default function Home() {
   const [portfolio, setPortfolio] = useState(initialPortfolio);
   const [githubUser, setGithubUser] = useState("vercel");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [githubStatus, setGithubStatus] = useState("Pronto para puxar repositórios reais.");
+  const [githubStatus, setGithubStatus] = useState("Pronto para buscar repositorios publicados.");
   const [chatDraft, setChatDraft] = useState("");
   const [chatByMatch, setChatByMatch] = useState<Record<string, ChatMessage[]>>({});
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -138,18 +137,21 @@ export default function Home() {
   const activeMatch = matches.find((match) => match.id === activeMatchId) ?? matches[0];
   const activeChat = activeMatch ? chatByMatch[activeMatch.id] ?? [] : [];
 
-  const buildMatches = useCallback((ids: string[]) => {
-    return profiles
-      .filter((developer) => ids.includes(developer.id))
-      .map((developer) => ({
-        id: developer.id,
-        name: developer.name,
-        role: developer.role,
-        avatar: developer.avatar,
-        compatibility: scoreDeveloper(developer, companyProfile),
-        suggestedOpening: `Oi ${developer.name.split(" ")[0]}, curti seu trabalho em ${developer.projects[0].name}. Vamos conversar sobre ${companyProfile.role}?`,
-      }));
-  }, [profiles]);
+  const buildMatches = useCallback(
+    (ids: string[]) => {
+      return profiles
+        .filter((developer) => ids.includes(developer.id))
+        .map((developer) => ({
+          id: developer.id,
+          name: developer.name,
+          role: developer.role,
+          avatar: developer.avatar,
+          compatibility: scoreDeveloper(developer, companyProfile),
+          suggestedOpening: `Oi ${developer.name.split(" ")[0]}, vi o projeto ${developer.projects[0].name}. Faz sentido conversar sobre ${companyProfile.role}?`,
+        }));
+    },
+    [profiles],
+  );
 
   useEffect(() => {
     async function loadProfiles() {
@@ -164,31 +166,33 @@ export default function Home() {
   useEffect(() => {
     gsap.fromTo(
       ".motion-in",
-      { y: 16, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.7, stagger: 0.06, ease: "power3.out" },
+      { y: 10, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.42, stagger: 0.04, ease: "power2.out" },
     );
   }, []);
 
   useEffect(() => {
     if (!cardRef.current) return;
+
     gsap.fromTo(
       cardRef.current,
-      { y: 24, rotate: -1.5, opacity: 0 },
-      { y: 0, rotate: 0, opacity: 1, duration: 0.45, ease: "power3.out" },
+      { y: 14, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.32, ease: "power2.out" },
     );
   }, [currentDeveloper?.id]);
 
   useEffect(() => {
-    if (!likedIds.length) {
-      return;
-    }
+    if (!likedIds.length) return;
 
     async function syncMatches() {
       try {
         const response = await fetch("/api/matches", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ likedIds }),
+          body: JSON.stringify({
+            companyEmail: session?.email,
+            likedIds,
+          }),
         });
         const data = await response.json();
         setMatches(data.matches);
@@ -201,7 +205,7 @@ export default function Home() {
     }
 
     syncMatches().catch(() => undefined);
-  }, [buildMatches, likedIds]);
+  }, [buildMatches, likedIds, session?.email]);
 
   async function handleAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -211,7 +215,7 @@ export default function Home() {
     const email = String(form.get("email") ?? "").trim().toLowerCase();
 
     if (!email.includes("@")) {
-      setAuthError("Informe um e-mail profissional válido.");
+      setAuthError("Informe um e-mail profissional valido.");
       return;
     }
 
@@ -249,10 +253,9 @@ export default function Home() {
     if (!currentDeveloper || !cardRef.current) return;
 
     gsap.to(cardRef.current, {
-      x: direction === "like" ? 360 : -360,
-      rotate: direction === "like" ? 9 : -9,
+      x: direction === "like" ? 220 : -220,
       opacity: 0,
-      duration: 0.28,
+      duration: 0.22,
       ease: "power2.in",
       onComplete: () => {
         if (direction === "like") {
@@ -265,7 +268,7 @@ export default function Home() {
   }
 
   async function fetchGithub() {
-    setGithubStatus("Lendo repositórios publicados...");
+    setGithubStatus("Buscando repositorios...");
 
     try {
       const response = await fetch(`/api/github?user=${encodeURIComponent(githubUser)}`);
@@ -277,35 +280,37 @@ export default function Home() {
       }
 
       setRepos(data.repos);
-      setGithubStatus(`${data.repos.length} repositórios importados de @${data.username}.`);
+      setGithubStatus(`${data.repos.length} repositorios importados de @${data.username}.`);
     } catch {
       const response = await fetch(
         `https://api.github.com/users/${encodeURIComponent(githubUser)}/repos?sort=updated&per_page=6`,
       );
 
       if (!response.ok) {
-        setGithubStatus("Não consegui ler esse GitHub agora.");
+        setGithubStatus("Nao consegui ler esse GitHub agora.");
         return;
       }
 
       const data = await response.json();
-      const mappedRepos = data.map((repo: {
-        name: string;
-        html_url: string;
-        description: string | null;
-        language: string | null;
-        stargazers_count: number;
-        updated_at: string;
-      }) => ({
-        name: repo.name,
-        url: repo.html_url,
-        description: repo.description ?? "Sem descrição publicada.",
-        language: repo.language ?? "Stack não informada",
-        stars: repo.stargazers_count,
-        updatedAt: repo.updated_at,
-      }));
+      const mappedRepos = data.map(
+        (repo: {
+          name: string;
+          html_url: string;
+          description: string | null;
+          language: string | null;
+          stargazers_count: number;
+          updated_at: string;
+        }) => ({
+          name: repo.name,
+          url: repo.html_url,
+          description: repo.description ?? "Sem descricao publicada.",
+          language: repo.language ?? "Stack nao informada",
+          stars: repo.stargazers_count,
+          updatedAt: repo.updated_at,
+        }),
+      );
       setRepos(mappedRepos);
-      setGithubStatus(`${mappedRepos.length} repositórios importados de @${githubUser}.`);
+      setGithubStatus(`${mappedRepos.length} repositorios importados de @${githubUser}.`);
     }
   }
 
@@ -358,138 +363,60 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#07070d] text-slate-100">
-      <div className="noise-layer" />
-      <section className="relative mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
-        <header className="motion-in flex flex-col gap-3 rounded-[28px] border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-fuchsia-950/20 backdrop-blur-2xl md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="grid size-12 place-items-center rounded-2xl bg-fuchsia-500/15 text-fuchsia-200 ring-1 ring-fuchsia-300/30">
-              <Zap className="size-6" />
+    <main className="min-h-screen bg-[#121313] px-3 py-4 text-[#f4f1eb] sm:px-5 lg:px-8">
+      <section className="mx-auto flex w-full max-w-[1380px] flex-col gap-4">
+        <div className="motion-in product-frame">
+          <header className="product-nav">
+            <div className="flex items-center gap-2">
+              <span className="nav-dot" />
+              <span className="nav-dot" />
+              <span className="nav-dot" />
+              <span className="nav-dot w-8" />
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.36em] text-cyan-200/70">DevMatch</p>
-              <h1 className="text-2xl font-semibold tracking-normal text-white md:text-3xl">
-                Contratação com feeling de produto.
-              </h1>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-xs sm:flex sm:text-left">
-            <Metric value={profiles.length} label="devs ativos" />
-            <Metric value={`${matches.length}`} label="matches" />
-            <Metric value="API" label="GitHub live" />
-          </div>
-        </header>
+            <nav className="hidden items-center gap-1 md:flex">
+              {["Deck", "Matches", "GitHub", "Perfil"].map((item) => (
+                <button className="nav-tab" key={item} type="button">
+                  {item}
+                </button>
+              ))}
+            </nav>
+            <button className="nav-cta" type="button">
+              {session ? session.name : "Registrar acesso"}
+            </button>
+          </header>
 
-        <div className="grid gap-5 lg:grid-cols-[330px_minmax(0,1fr)_360px]">
-          <aside className="motion-in space-y-5">
-            <Panel>
-              <div className="flex items-center justify-between">
+          <div className="grid gap-3 p-3 lg:grid-cols-[0.86fr_1.34fr] lg:p-4">
+            <section className="flex min-h-[620px] flex-col justify-between rounded-xl bg-[#f4f1eb] p-5 text-[#111111] sm:p-7">
+              <div className="space-y-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#111111]/10 px-3 py-1 text-xs font-semibold">
+                  <Zap className="size-3.5" />
+                  DevMatch
+                </div>
                 <div>
-                  <p className="text-sm text-slate-400">Acesso</p>
-                  <h2 className="text-lg font-semibold text-white">
-                    {session ? `Olá, ${session.name}` : "Entrar ou cadastrar"}
-                  </h2>
+                  <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#5d5750]">
+                    Contratacao tecnica
+                  </p>
+                  <h1 className="max-w-xl text-5xl font-black leading-[0.92] tracking-[-0.04em] sm:text-6xl">
+                    Contrate pelo trabalho entregue.
+                  </h1>
+                  <p className="mt-5 max-w-md text-base leading-7 text-[#4a4640]">
+                    Veja portfolio, stack, codigo e sinais de produto em uma experiencia direta para times que precisam decidir melhor.
+                  </p>
                 </div>
-                <UserRoundPlus className="size-5 text-cyan-200" />
-              </div>
 
-              {!session ? (
-                <form className="mt-5 space-y-3" onSubmit={handleAuth}>
-                  <div className="grid grid-cols-2 gap-2 rounded-2xl bg-black/30 p-1">
-                    <button
-                      className={`rounded-xl px-3 py-2 text-sm transition ${authMode === "company" ? "bg-cyan-300 text-black" : "text-slate-300"}`}
-                      type="button"
-                      onClick={() => setAuthMode("company")}
-                    >
-                      Empresa
-                    </button>
-                    <button
-                      className={`rounded-xl px-3 py-2 text-sm transition ${authMode === "developer" ? "bg-fuchsia-300 text-black" : "text-slate-300"}`}
-                      type="button"
-                      onClick={() => setAuthMode("developer")}
-                    >
-                      Dev
-                    </button>
-                  </div>
-                  <input name="name" placeholder="Nome" className="field" />
-                  <input name="email" type="email" placeholder="email@empresa.com" className="field" />
-                  <input name="password" type="password" placeholder="Senha" className="field" />
-                  {authError ? <p className="text-sm text-rose-300">{authError}</p> : null}
-                  <button className="primary-button w-full" type="submit">
-                    <ShieldCheck className="size-4" />
-                    Acessar painel
-                  </button>
-                </form>
-              ) : (
-                <div className="mt-5 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm text-cyan-50">
-                  Sessão ativa como {session.mode === "company" ? "empresa" : "dev"}. O estado fica salvo no navegador.
+                <div className="grid grid-cols-3 gap-2">
+                  <Metric value={profiles.length} label="devs" />
+                  <Metric value={matches.length} label="matches" />
+                  <Metric value={currentDeveloper?.compatibility.score ?? "--"} label="score" />
                 </div>
-              )}
-            </Panel>
 
-            <Panel>
-              <div className="flex items-center gap-2">
-                <BriefcaseBusiness className="size-5 text-fuchsia-200" />
-                <h2 className="text-lg font-semibold text-white">Vaga aberta</h2>
-              </div>
-              <div className="mt-4 space-y-3">
-                <p className="text-sm text-slate-400">{companyProfile.name}</p>
-                <p className="text-xl font-semibold text-white">{companyProfile.role}</p>
-                <div className="flex flex-wrap gap-2">
-                  {companyProfile.stack.map((skill) => (
-                    <Tag key={skill}>{skill}</Tag>
-                  ))}
-                </div>
-              </div>
-            </Panel>
-
-            <Panel>
-              <div className="flex items-center gap-2">
-                <Code2 className="size-5 text-lime-200" />
-                <h2 className="text-lg font-semibold text-white">Seu perfil público</h2>
-              </div>
-              <div className="mt-4 space-y-3">
-                <input
-                  className="field"
-                  value={portfolio.name}
-                  onChange={(event) => setPortfolio({ ...portfolio, name: event.target.value })}
-                />
-                <textarea
-                  className="field min-h-24 resize-none"
-                  value={portfolio.bio}
-                  onChange={(event) => setPortfolio({ ...portfolio, bio: event.target.value })}
-                />
-                <input
-                  className="field"
-                  value={portfolio.skills}
-                  onChange={(event) => setPortfolio({ ...portfolio, skills: event.target.value })}
-                />
-                <textarea
-                  className="field min-h-20 resize-none"
-                  value={portfolio.project}
-                  onChange={(event) => setPortfolio({ ...portfolio, project: event.target.value })}
-                />
-              </div>
-            </Panel>
-          </aside>
-
-          <section className="motion-in min-w-0 space-y-5">
-            <Panel className="overflow-hidden">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-slate-400">Swipe técnico</p>
-                  <h2 className="text-2xl font-semibold text-white">Descubra devs por código, projeto e contexto.</h2>
-                </div>
                 <div className="flex flex-wrap gap-2">
                   {stackOptions.map((stack) => (
                     <button
+                      className={`light-chip ${activeStack === stack ? "is-active" : ""}`}
                       key={stack}
-                      className={`rounded-full border px-3 py-2 text-xs transition ${
-                        activeStack === stack
-                          ? "border-fuchsia-300 bg-fuchsia-300 text-black"
-                          : "border-white/10 bg-white/5 text-slate-300 hover:border-cyan-200/60"
-                      }`}
                       onClick={() => setActiveStack(stack)}
+                      type="button"
                     >
                       {stack}
                     </button>
@@ -497,249 +424,261 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_240px]">
-                <div className="relative min-h-[620px]">
-                  {currentDeveloper ? (
-                    <div ref={cardRef} className="swipe-card absolute inset-0 rounded-[32px] border border-white/10 bg-[#11111b] p-4 shadow-2xl shadow-fuchsia-950/30">
-                      <div className="relative h-full overflow-hidden rounded-[24px] border border-white/10 bg-black">
-                        <Image
-                          src={currentDeveloper.avatar}
-                          alt={`Foto de ${currentDeveloper.name}`}
-                          width={960}
-                          height={640}
-                          className="h-72 w-full object-cover sm:h-80"
-                          priority
-                        />
-                        <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm font-medium backdrop-blur">
-                          {currentDeveloper.compatibility.score}% compatível
-                        </div>
-                        <div className="space-y-5 p-5">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                            <div>
-                              <p className="text-sm text-cyan-200">{currentDeveloper.role}</p>
-                              <h3 className="text-3xl font-semibold text-white">{currentDeveloper.name}</h3>
-                              <p className="text-sm text-slate-400">{currentDeveloper.location} · {currentDeveloper.seniority}</p>
-                            </div>
-                            <div className="rounded-2xl border border-lime-300/20 bg-lime-300/10 px-4 py-3 text-sm text-lime-50">
-                              {currentDeveloper.availability}
-                              <span className="block text-xs text-lime-200/70">disponibilidade</span>
-                            </div>
-                          </div>
+              <div className="mt-8 grid gap-3 md:grid-cols-2">
+                <form className="compact-box space-y-2" onSubmit={handleAuth}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold">Acesso</span>
+                    <UserRoundPlus className="size-4" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
+                    <button
+                      className={`rounded-md px-2 py-1.5 text-xs font-bold ${authMode === "company" ? "bg-[#111111] text-white" : ""}`}
+                      type="button"
+                      onClick={() => setAuthMode("company")}
+                    >
+                      Empresa
+                    </button>
+                    <button
+                      className={`rounded-md px-2 py-1.5 text-xs font-bold ${authMode === "developer" ? "bg-[#111111] text-white" : ""}`}
+                      type="button"
+                      onClick={() => setAuthMode("developer")}
+                    >
+                      Dev
+                    </button>
+                  </div>
+                  <input className="light-field" name="name" placeholder="Nome" />
+                  <input className="light-field" name="email" placeholder="email@empresa.com" type="email" />
+                  <button className="light-button" type="submit">
+                    <ShieldCheck className="size-4" />
+                    Entrar
+                  </button>
+                  {authError ? <p className="text-xs font-semibold text-red-700">{authError}</p> : null}
+                </form>
 
-                          <p className="text-base leading-7 text-slate-300">{currentDeveloper.bio}</p>
-
-                          <div className="flex flex-wrap gap-2">
-                            {currentDeveloper.stack.map((skill) => (
-                              <Tag key={skill}>{skill}</Tag>
-                            ))}
-                          </div>
-
-                          <div className="grid gap-3 md:grid-cols-2">
-                            {currentDeveloper.projects.map((project) => (
-                              <a
-                                key={project.name}
-                                href={project.link}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="rounded-2xl border border-white/10 bg-white/[0.045] p-4 transition hover:border-cyan-200/50 hover:bg-cyan-200/10"
-                              >
-                                <p className="font-semibold text-white">{project.name}</p>
-                                <p className="mt-2 text-sm leading-6 text-slate-400">{project.description}</p>
-                                <code className="mt-3 block rounded-xl bg-black/50 p-3 text-xs text-cyan-100">{project.code}</code>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid min-h-[620px] place-items-center rounded-[32px] border border-dashed border-white/15 bg-white/[0.04] p-8 text-center">
-                      <div>
-                        <Sparkles className="mx-auto size-10 text-fuchsia-200" />
-                        <h3 className="mt-4 text-2xl font-semibold text-white">Fila revisada</h3>
-                        <p className="mt-2 max-w-md text-slate-400">
-                          Troque o filtro ou revisite os matches para continuar a conversa.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                <div className="compact-box">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-sm font-bold">Vaga atual</span>
+                    <BriefcaseBusiness className="size-4" />
+                  </div>
+                  <p className="text-sm leading-6 text-[#4a4640]">{companyProfile.role}</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {companyProfile.stack.slice(0, 4).map((skill) => (
+                      <span className="rounded-full bg-[#111111]/8 px-2 py-1 text-[11px] font-bold" key={skill}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
+              </div>
+            </section>
 
-                <div className="space-y-3">
-                  <button className="swipe-action border-rose-300/30 bg-rose-400/10 text-rose-100" onClick={() => swipe("pass")}>
-                    <X className="size-5" />
-                    Dispensar
-                  </button>
-                  <button className="swipe-action border-fuchsia-300/40 bg-fuchsia-400/15 text-fuchsia-50" onClick={() => swipe("like")}>
-                    <Heart className="size-5" />
-                    Dar match
-                  </button>
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                      <Sparkles className="size-4 text-cyan-200" />
-                      IA de compatibilidade
+            <section className="relative min-h-[620px] overflow-hidden rounded-xl bg-[#d9d3c8] text-[#111111]">
+              {currentDeveloper ? (
+                <div ref={cardRef} className="h-full">
+                  <Image
+                    src={currentDeveloper.avatar}
+                    alt={`Foto de ${currentDeveloper.name}`}
+                    width={1040}
+                    height={900}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#f4f1eb] via-[#f4f1eb]/72 to-transparent" />
+
+                  <div className="absolute left-4 top-4 grid grid-cols-2 gap-2 sm:left-6 sm:top-6">
+                    {currentDeveloper.projects.map((project) => (
+                      <a className="preview-card" href={project.link} key={project.name} rel="noreferrer" target="_blank">
+                        <span className="line-clamp-1 text-sm font-black">{project.name}</span>
+                        <span className="mt-1 line-clamp-2 text-xs leading-5 text-[#59534c]">{project.description}</span>
+                      </a>
+                    ))}
+                  </div>
+
+                  <div className="absolute left-4 top-[170px] max-w-[380px] sm:left-7 sm:top-[190px]">
+                    <p className="mb-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-black">
+                      {currentDeveloper.compatibility.score}% compativel
+                    </p>
+                    <h2 className="text-5xl font-black leading-[0.9] tracking-[-0.05em] sm:text-6xl">
+                      {currentDeveloper.name}
+                    </h2>
+                    <p className="mt-3 text-lg font-bold">{currentDeveloper.role}</p>
+                    <p className="mt-3 max-w-sm text-sm leading-6 text-[#4a4640]">{currentDeveloper.bio}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {currentDeveloper.stack.slice(0, 5).map((skill) => (
+                        <span className="rounded-full border border-[#111111]/15 bg-white/70 px-3 py-1 text-xs font-bold" key={skill}>
+                          {skill}
+                        </span>
+                      ))}
                     </div>
-                    <div className="mt-4 space-y-3">
-                      {(currentDeveloper?.compatibility.reasons ?? ["Filtro ativo sem candidato novo."]).map((reason) => (
-                        <p key={reason} className="rounded-2xl bg-black/25 p-3 text-sm leading-6 text-slate-300">
+                  </div>
+
+                  <div className="absolute bottom-5 left-5 flex flex-wrap gap-2">
+                    <button className="round-action is-muted" onClick={() => swipe("pass")} type="button">
+                      <X className="size-5" />
+                    </button>
+                    <button className="round-action" onClick={() => swipe("like")} type="button">
+                      <Heart className="size-5" />
+                    </button>
+                  </div>
+
+                  <div className="absolute bottom-5 right-5 hidden w-56 rounded-xl bg-white/88 p-4 shadow-2xl backdrop-blur md:block">
+                    <div className="flex items-center gap-2 text-sm font-black">
+                      <BadgeCheck className="size-4" />
+                      Leitura de aderencia
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {currentDeveloper.compatibility.reasons.map((reason) => (
+                        <p className="rounded-lg bg-[#111111]/6 p-2 text-xs leading-5 text-[#4a4640]" key={reason}>
                           {reason}
                         </p>
                       ))}
                     </div>
                   </div>
                 </div>
-              </div>
-            </Panel>
-          </section>
-
-          <aside className="motion-in space-y-5">
-            <Panel>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-400">Matches</p>
-                  <h2 className="text-lg font-semibold text-white">Conversas abertas</h2>
-                </div>
-                <MessageCircle className="size-5 text-fuchsia-200" />
-              </div>
-              <div className="mt-4 space-y-3">
-                {matches.length ? (
-                  matches.map((match) => (
-                    <button
-                      key={match.id}
-                      className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
-                        activeMatch?.id === match.id
-                          ? "border-cyan-200/50 bg-cyan-200/10"
-                          : "border-white/10 bg-white/[0.035] hover:border-fuchsia-200/40"
-                      }`}
-                      onClick={() => setActiveMatchId(match.id)}
-                    >
-                      <Image
-                        src={match.avatar}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="size-12 rounded-xl object-cover"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-semibold text-white">{match.name}</span>
-                        <span className="block text-xs text-slate-400">{match.compatibility.score}% compatível</span>
-                      </span>
-                    </button>
-                  ))
-                ) : (
-                  <p className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-slate-400">
-                    Curta um perfil no deck para abrir uma conversa com sugestão automática de abordagem.
-                  </p>
-                )}
-              </div>
-            </Panel>
-
-            <Panel>
-              <div className="flex items-center gap-2">
-                <GitPullRequest className="size-5 text-white" />
-                <h2 className="text-lg font-semibold text-white">GitHub real</h2>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <input
-                  className="field"
-                  value={githubUser}
-                  onChange={(event) => setGithubUser(event.target.value)}
-                  placeholder="usuario"
-                />
-                <button className="icon-button" onClick={fetchGithub} aria-label="Buscar GitHub">
-                  <Search className="size-4" />
-                </button>
-              </div>
-              <p className="mt-3 text-sm text-slate-400">{githubStatus}</p>
-              <div className="mt-4 space-y-3">
-                {repos.slice(0, 3).map((repo) => (
-                  <a key={repo.url} href={repo.url} target="_blank" rel="noreferrer" className="block rounded-2xl border border-white/10 bg-black/25 p-3 hover:border-lime-200/50">
-                    <span className="flex items-center justify-between gap-2">
-                      <span className="truncate font-semibold text-white">{repo.name}</span>
-                      <span className="text-xs text-lime-200">{repo.stars} ★</span>
-                    </span>
-                    <span className="mt-2 block text-xs text-slate-400">{repo.language}</span>
-                  </a>
-                ))}
-              </div>
-            </Panel>
-
-            <Panel>
-              <div className="flex items-center gap-2">
-                <BadgeCheck className="size-5 text-lime-200" />
-                <h2 className="text-lg font-semibold text-white">Chat do match</h2>
-              </div>
-              {activeMatch ? (
-                <div className="mt-4">
-                  <p className="rounded-2xl bg-fuchsia-300/10 p-3 text-sm leading-6 text-fuchsia-50">
-                    {activeMatch.suggestedOpening}
-                  </p>
-                  <div className="mt-4 max-h-64 space-y-3 overflow-auto pr-1">
-                    {activeChat.map((message, index) => (
-                      <p
-                        key={`${message.createdAt}-${index}`}
-                        className={`rounded-2xl p-3 text-sm leading-6 ${
-                          message.author === "company"
-                            ? "ml-8 bg-cyan-300 text-black"
-                            : "mr-8 bg-white/10 text-slate-100"
-                        }`}
-                      >
-                        {message.text}
-                      </p>
-                    ))}
-                  </div>
-                  <form className="mt-4 flex gap-2" onSubmit={sendMessage}>
-                    <input
-                      className="field"
-                      value={chatDraft}
-                      onChange={(event) => setChatDraft(event.target.value)}
-                      placeholder="Escreva uma mensagem"
-                    />
-                    <button className="icon-button" type="submit" aria-label="Enviar mensagem">
-                      <MessageCircle className="size-4" />
-                    </button>
-                  </form>
-                </div>
               ) : (
-                <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-slate-400">
-                  O chat aparece quando existir pelo menos um match.
-                </p>
+                <div className="grid h-full place-items-center p-8 text-center">
+                  <div>
+                    <h2 className="text-4xl font-black tracking-[-0.04em]">Fila revisada</h2>
+                    <p className="mt-3 max-w-md text-sm leading-6 text-[#4a4640]">
+                      Troque o filtro ou volte para uma conversa ja aberta.
+                    </p>
+                  </div>
+                </div>
               )}
-            </Panel>
-          </aside>
+            </section>
+          </div>
         </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
+          <DarkPanel title="Matches" icon={<MessageCircle className="size-5" />}>
+            <div className="space-y-2">
+              {matches.length ? (
+                matches.map((match) => (
+                  <button
+                    className={`match-row ${activeMatch?.id === match.id ? "is-active" : ""}`}
+                    key={match.id}
+                    onClick={() => setActiveMatchId(match.id)}
+                    type="button"
+                  >
+                    <Image alt="" className="size-11 rounded-lg object-cover" height={44} src={match.avatar} width={44} />
+                    <span className="min-w-0 flex-1 text-left">
+                      <span className="block truncate text-sm font-bold text-white">{match.name}</span>
+                      <span className="block text-xs text-slate-400">{match.compatibility.score}% compativel</span>
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-slate-400">Curta um perfil para abrir a conversa.</p>
+              )}
+            </div>
+          </DarkPanel>
+
+          <DarkPanel title="GitHub" icon={<GitPullRequest className="size-5" />}>
+            <div className="flex gap-2">
+              <input
+                className="field"
+                onChange={(event) => setGithubUser(event.target.value)}
+                placeholder="usuario"
+                value={githubUser}
+              />
+              <button aria-label="Buscar GitHub" className="icon-button" onClick={fetchGithub} type="button">
+                <Search className="size-4" />
+              </button>
+            </div>
+            <p className="mt-3 text-sm text-slate-400">{githubStatus}</p>
+            <div className="mt-4 space-y-2">
+              {repos.slice(0, 3).map((repo) => (
+                <a className="repo-row" href={repo.url} key={repo.url} rel="noreferrer" target="_blank">
+                  <span className="truncate text-sm font-bold text-white">{repo.name}</span>
+                  <span className="text-xs text-cyan-200">{repo.language}</span>
+                </a>
+              ))}
+            </div>
+          </DarkPanel>
+
+          <DarkPanel title="Conversa" icon={<Code2 className="size-5" />}>
+            {activeMatch ? (
+              <>
+                <p className="rounded-lg bg-cyan-300/10 p-3 text-sm leading-6 text-cyan-50">{activeMatch.suggestedOpening}</p>
+                <div className="mt-3 max-h-44 space-y-2 overflow-auto pr-1">
+                  {activeChat.map((message, index) => (
+                    <p
+                      className={`rounded-lg p-3 text-sm leading-6 ${
+                        message.author === "company" ? "ml-8 bg-cyan-300 text-black" : "mr-8 bg-white/10 text-slate-100"
+                      }`}
+                      key={`${message.createdAt}-${index}`}
+                    >
+                      {message.text}
+                    </p>
+                  ))}
+                </div>
+                <form className="mt-3 flex gap-2" onSubmit={sendMessage}>
+                  <input
+                    className="field"
+                    onChange={(event) => setChatDraft(event.target.value)}
+                    placeholder="Mensagem"
+                    value={chatDraft}
+                  />
+                  <button aria-label="Enviar mensagem" className="icon-button" type="submit">
+                    <MessageCircle className="size-4" />
+                  </button>
+                </form>
+              </>
+            ) : (
+              <p className="text-sm leading-6 text-slate-400">O chat aparece depois do primeiro match.</p>
+            )}
+          </DarkPanel>
+        </div>
+
+        <DarkPanel title="Perfil publico" icon={<UserRoundPlus className="size-5" />}>
+          <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]">
+            <input
+              className="field"
+              onChange={(event) => setPortfolio({ ...portfolio, name: event.target.value })}
+              value={portfolio.name}
+            />
+            <input
+              className="field"
+              onChange={(event) => setPortfolio({ ...portfolio, skills: event.target.value })}
+              value={portfolio.skills}
+            />
+            <input
+              className="field"
+              onChange={(event) => setPortfolio({ ...portfolio, project: event.target.value })}
+              value={portfolio.project}
+            />
+          </div>
+        </DarkPanel>
       </section>
     </main>
   );
 }
 
-function Panel({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`rounded-[28px] border border-white/10 bg-white/[0.055] p-5 shadow-xl shadow-black/20 backdrop-blur-2xl ${className}`}>
-      {children}
-    </section>
-  );
-}
-
 function Metric({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-      <p className="text-lg font-semibold text-white">{value}</p>
-      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">{label}</p>
+    <div className="rounded-lg border border-[#111111]/10 bg-white/50 px-3 py-3">
+      <p className="text-xl font-black">{value}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#645f58]">{label}</p>
     </div>
   );
 }
 
-function Tag({ children }: { children: React.ReactNode }) {
+function DarkPanel({
+  children,
+  icon,
+  title,
+}: {
+  children: React.ReactNode;
+  icon: React.ReactNode;
+  title: string;
+}) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-medium text-slate-200">
+    <section className="motion-in rounded-xl border border-white/10 bg-[#191b1f] p-4 shadow-xl shadow-black/20">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white">{title}</h2>
+        <span className="text-cyan-200">{icon}</span>
+      </div>
       {children}
-    </span>
+    </section>
   );
 }

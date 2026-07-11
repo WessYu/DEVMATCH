@@ -137,7 +137,7 @@ export const developers: DeveloperProfile[] = [
         code: "const highlights = notes.map(classifyInterviewSignal);",
       },
     ],
-    signals: ["IA aplicada", "Pesquisa", "Firebase"],
+    signals: ["Automacao aplicada", "Pesquisa", "Firebase"],
   },
   {
     id: "leo",

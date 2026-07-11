@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { saveMessageToDatabase } from "@/lib/db";
 
 export const dynamic = "force-static";
 
@@ -12,6 +13,7 @@ const replies = [
 export async function POST(request: Request) {
   const payload = await request.json();
   const message = String(payload.message ?? "").trim();
+  const matchId = String(payload.matchId ?? "default");
 
   if (!message) {
     return NextResponse.json(
@@ -21,9 +23,21 @@ export async function POST(request: Request) {
   }
 
   const reply = replies[Math.floor(Math.random() * replies.length)];
+  const createdAt = new Date().toISOString();
+
+  await saveMessageToDatabase({
+    author: "company",
+    body: message,
+    matchKey: matchId,
+  });
+  await saveMessageToDatabase({
+    author: "developer",
+    body: reply,
+    matchKey: matchId,
+  });
 
   return NextResponse.json({
     reply,
-    createdAt: new Date().toISOString(),
+    createdAt,
   });
 }
