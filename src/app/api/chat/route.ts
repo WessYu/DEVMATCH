@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-static";
+
 const replies = [
   "Legal. Tenho disponibilidade para uma call técnica esta semana.",
   "Esse desafio parece bem alinhado com meu último projeto.",

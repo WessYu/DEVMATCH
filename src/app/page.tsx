@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import {
@@ -20,6 +20,7 @@ import {
 import {
   companyProfile,
   developers as fallbackDevelopers,
+  scoreDeveloper,
   stackOptions,
   type DeveloperProfile,
 } from "@/lib/devmatch-data";
@@ -78,6 +79,30 @@ const initialPortfolio = {
   project: "Cole aqui seu melhor projeto com link, contexto e decisão técnica importante.",
 };
 
+const staticChatReplies = [
+  "Legal. Tenho disponibilidade para uma call técnica esta semana.",
+  "Esse desafio parece bem alinhado com meu último projeto.",
+  "Posso mandar um recorte do código e explicar as decisões de arquitetura.",
+  "Curti a vaga. Como vocês medem sucesso nos primeiros 90 dias?",
+];
+
+function normalizeDisplayName(name: FormDataEntryValue | null, email: string) {
+  const typedName = String(name ?? "").trim();
+
+  if (typedName) {
+    return typedName;
+  }
+
+  return email
+    .split("@")[0]
+    .replace(/[._-]/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function makeStaticReply() {
+  return staticChatReplies[Math.floor(Math.random() * staticChatReplies.length)];
+}
+
 export default function Home() {
   const [profiles, setProfiles] = useState<EnrichedDeveloper[]>(fallbackProfiles);
   const [activeStack, setActiveStack] = useState("Todos");
@@ -113,6 +138,19 @@ export default function Home() {
   const activeMatch = matches.find((match) => match.id === activeMatchId) ?? matches[0];
   const activeChat = activeMatch ? chatByMatch[activeMatch.id] ?? [] : [];
 
+  const buildMatches = useCallback((ids: string[]) => {
+    return profiles
+      .filter((developer) => ids.includes(developer.id))
+      .map((developer) => ({
+        id: developer.id,
+        name: developer.name,
+        role: developer.role,
+        avatar: developer.avatar,
+        compatibility: scoreDeveloper(developer, companyProfile),
+        suggestedOpening: `Oi ${developer.name.split(" ")[0]}, curti seu trabalho em ${developer.projects[0].name}. Vamos conversar sobre ${companyProfile.role}?`,
+      }));
+  }, [profiles]);
+
   useEffect(() => {
     async function loadProfiles() {
       const response = await fetch("/api/profiles");
@@ -146,42 +184,65 @@ export default function Home() {
     }
 
     async function syncMatches() {
-      const response = await fetch("/api/matches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ likedIds }),
-      });
-      const data = await response.json();
-      setMatches(data.matches);
-      setActiveMatchId((current) => current || data.matches[0]?.id || "");
+      try {
+        const response = await fetch("/api/matches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ likedIds }),
+        });
+        const data = await response.json();
+        setMatches(data.matches);
+        setActiveMatchId((current) => current || data.matches[0]?.id || "");
+      } catch {
+        const staticMatches = buildMatches(likedIds);
+        setMatches(staticMatches);
+        setActiveMatchId((current) => current || staticMatches[0]?.id || "");
+      }
     }
 
     syncMatches().catch(() => undefined);
-  }, [likedIds]);
+  }, [buildMatches, likedIds]);
 
   async function handleAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setAuthError("");
 
-    const response = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: form.get("name"),
-        email: form.get("email"),
-        mode: authMode,
-      }),
-    });
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
 
-    const data = await response.json();
-    if (!response.ok) {
-      setAuthError(data.error);
+    if (!email.includes("@")) {
+      setAuthError("Informe um e-mail profissional válido.");
       return;
     }
 
-    setSession(data.user);
-    window.localStorage.setItem("devmatch-session", JSON.stringify(data.user));
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.get("name"),
+          email,
+          mode: authMode,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setAuthError(data.error);
+        return;
+      }
+
+      setSession(data.user);
+      window.localStorage.setItem("devmatch-session", JSON.stringify(data.user));
+    } catch {
+      const user = {
+        email,
+        name: normalizeDisplayName(form.get("name"), email),
+        mode: authMode,
+      };
+      setSession(user);
+      window.localStorage.setItem("devmatch-session", JSON.stringify(user));
+    }
   }
 
   function swipe(direction: "like" | "pass") {
@@ -205,16 +266,47 @@ export default function Home() {
 
   async function fetchGithub() {
     setGithubStatus("Lendo repositórios publicados...");
-    const response = await fetch(`/api/github?user=${encodeURIComponent(githubUser)}`);
-    const data = await response.json();
 
-    if (!response.ok) {
-      setGithubStatus(data.error);
-      return;
+    try {
+      const response = await fetch(`/api/github?user=${encodeURIComponent(githubUser)}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGithubStatus(data.error);
+        return;
+      }
+
+      setRepos(data.repos);
+      setGithubStatus(`${data.repos.length} repositórios importados de @${data.username}.`);
+    } catch {
+      const response = await fetch(
+        `https://api.github.com/users/${encodeURIComponent(githubUser)}/repos?sort=updated&per_page=6`,
+      );
+
+      if (!response.ok) {
+        setGithubStatus("Não consegui ler esse GitHub agora.");
+        return;
+      }
+
+      const data = await response.json();
+      const mappedRepos = data.map((repo: {
+        name: string;
+        html_url: string;
+        description: string | null;
+        language: string | null;
+        stargazers_count: number;
+        updated_at: string;
+      }) => ({
+        name: repo.name,
+        url: repo.html_url,
+        description: repo.description ?? "Sem descrição publicada.",
+        language: repo.language ?? "Stack não informada",
+        stars: repo.stargazers_count,
+        updatedAt: repo.updated_at,
+      }));
+      setRepos(mappedRepos);
+      setGithubStatus(`${mappedRepos.length} repositórios importados de @${githubUser}.`);
     }
-
-    setRepos(data.repos);
-    setGithubStatus(`${data.repos.length} repositórios importados de @${data.username}.`);
   }
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
@@ -233,18 +325,30 @@ export default function Home() {
     }));
     setChatDraft("");
 
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ matchId: activeMatch.id, message: mine.text }),
-    });
-    const data = await response.json();
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: activeMatch.id, message: mine.text }),
+      });
+      const data = await response.json();
 
-    if (response.ok) {
+      if (response.ok) {
+        const reply: ChatMessage = {
+          author: "developer",
+          text: data.reply,
+          createdAt: data.createdAt,
+        };
+        setChatByMatch((current) => ({
+          ...current,
+          [activeMatch.id]: [...(current[activeMatch.id] ?? []), reply],
+        }));
+      }
+    } catch {
       const reply: ChatMessage = {
         author: "developer",
-        text: data.reply,
-        createdAt: data.createdAt,
+        text: makeStaticReply(),
+        createdAt: new Date().toISOString(),
       };
       setChatByMatch((current) => ({
         ...current,

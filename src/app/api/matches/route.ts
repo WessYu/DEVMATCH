@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { companyProfile, developers, scoreDeveloper } from "@/lib/devmatch-data";
 
+export const dynamic = "force-static";
+
 export async function POST(request: Request) {
   const payload = await request.json();
   const likedIds = Array.isArray(payload.likedIds) ? payload.likedIds : [];

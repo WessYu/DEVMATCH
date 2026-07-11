@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-static";
+
 type GitHubRepo = {
   name: string;
   html_url: string;
