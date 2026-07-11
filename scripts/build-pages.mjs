@@ -1,4 +1,4 @@
-import { existsSync, renameSync, rmSync } from "node:fs";
+import { cpSync, existsSync, renameSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 const apiDir = "src/app/api";
@@ -11,6 +11,7 @@ let backedUpRuntimeBuild = false;
 try {
   rmSync(".next-pages", { force: true, recursive: true });
   rmSync(runtimeBuildBackupDir, { force: true, recursive: true });
+  rmSync("out", { force: true, recursive: true });
 
   if (existsSync(runtimeBuildDir)) {
     renameSync(runtimeBuildDir, runtimeBuildBackupDir);
@@ -36,6 +37,10 @@ try {
 
   if (result.error) {
     console.error(result.error.message);
+  }
+
+  if (!existsSync("out") && existsSync(".next-pages/index.html")) {
+    cpSync(".next-pages", "out", { recursive: true });
   }
 
   process.exitCode = result.status ?? 1;
