@@ -1,24 +1,29 @@
 import { NextResponse } from "next/server";
 import { companyProfile, developers, scoreDeveloper } from "@/lib/devmatch-data";
 import { saveMatchesToDatabase } from "@/lib/db";
+import { cleanDeveloperIds, cleanEmail } from "@/lib/request-guards";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const payload = await request.json();
-  const likedIds = Array.isArray(payload.likedIds) ? payload.likedIds : [];
-  const companyEmail =
-    typeof payload.companyEmail === "string" && payload.companyEmail.includes("@")
-      ? payload.companyEmail
-      : "demo@devmatch.local";
+  const likedIds = cleanDeveloperIds(payload.likedIds);
+  const companyEmail = cleanEmail(payload.companyEmail) || "demo@devmatch.local";
 
-  const databaseMatches = await saveMatchesToDatabase({
-    companyEmail,
-    likedIds,
-  });
+  try {
+    const databaseMatches = await saveMatchesToDatabase({
+      companyEmail,
+      likedIds,
+    });
 
-  if (databaseMatches) {
-    return NextResponse.json({ matches: databaseMatches });
+    if (databaseMatches) {
+      return NextResponse.json({ matches: databaseMatches });
+    }
+  } catch {
+    return NextResponse.json(
+      { error: "Nao foi possivel salvar o match agora." },
+      { status: 503 },
+    );
   }
 
   const matches = developers

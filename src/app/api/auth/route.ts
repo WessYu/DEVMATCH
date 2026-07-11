@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
 import { saveUserToDatabase } from "@/lib/db";
+import { cleanEmail, cleanText } from "@/lib/request-guards";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const payload = await request.json();
-  const email = String(payload.email ?? "").trim().toLowerCase();
-  const name = String(payload.name ?? "").trim();
+  const email = cleanEmail(payload.email);
+  const name = cleanText(payload.name, 80);
   const mode: "company" | "developer" =
     payload.mode === "developer" ? "developer" : "company";
 
-  if (!email.includes("@")) {
+  if (!email) {
     return NextResponse.json(
       { error: "Informe um e-mail profissional válido." },
       { status: 400 },
@@ -26,10 +27,16 @@ export async function POST(request: Request) {
     mode,
   };
 
-  await saveUserToDatabase(user);
+  try {
+    await saveUserToDatabase(user);
+  } catch {
+    return NextResponse.json(
+      { error: "Nao foi possivel salvar o acesso agora." },
+      { status: 503 },
+    );
+  }
 
   return NextResponse.json({
-    token: Buffer.from(`${email}:${Date.now()}`).toString("base64url"),
     user,
   });
 }

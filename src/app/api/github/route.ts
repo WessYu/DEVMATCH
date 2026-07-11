@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { cleanText } from "@/lib/request-guards";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 type GitHubRepo = {
   name: string;
@@ -13,9 +14,9 @@ type GitHubRepo = {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const username = searchParams.get("user")?.trim();
+  const username = cleanText(searchParams.get("user"), 39);
 
-  if (!username) {
+  if (!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(username)) {
     return NextResponse.json(
       { error: "Informe um usuário do GitHub." },
       { status: 400 },

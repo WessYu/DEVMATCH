@@ -14,8 +14,8 @@ import {
   ShieldCheck,
   UserRoundPlus,
   X,
-  Zap,
 } from "lucide-react";
+import { DevMatchLogo } from "@/components/DevMatchLogo";
 import {
   companyProfile,
   developers as fallbackDevelopers,
@@ -23,6 +23,12 @@ import {
   stackOptions,
   type DeveloperProfile,
 } from "@/lib/devmatch-data";
+
+const apiBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+function apiPath(path: string) {
+  return `${apiBasePath}${path}`;
+}
 
 type Compatibility = {
   score: number;
@@ -155,7 +161,10 @@ export default function Home() {
 
   useEffect(() => {
     async function loadProfiles() {
-      const response = await fetch("/api/profiles");
+      const response = await fetch(apiPath("/api/profiles"));
+      if (!response.ok) {
+        throw new Error("profiles unavailable");
+      }
       const data = await response.json();
       setProfiles(data.developers);
     }
@@ -186,7 +195,7 @@ export default function Home() {
 
     async function syncMatches() {
       try {
-        const response = await fetch("/api/matches", {
+        const response = await fetch(apiPath("/api/matches"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -194,7 +203,13 @@ export default function Home() {
             likedIds,
           }),
         });
+        if (!response.ok) {
+          throw new Error("matches unavailable");
+        }
         const data = await response.json();
+        if (!Array.isArray(data.matches)) {
+          throw new Error("invalid matches payload");
+        }
         setMatches(data.matches);
         setActiveMatchId((current) => current || data.matches[0]?.id || "");
       } catch {
@@ -220,7 +235,7 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch("/api/auth", {
+      const response = await fetch(apiPath("/api/auth"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -271,7 +286,7 @@ export default function Home() {
     setGithubStatus("Buscando repositorios...");
 
     try {
-      const response = await fetch(`/api/github?user=${encodeURIComponent(githubUser)}`);
+      const response = await fetch(apiPath(`/api/github?user=${encodeURIComponent(githubUser)}`));
       const data = await response.json();
 
       if (!response.ok) {
@@ -331,24 +346,26 @@ export default function Home() {
     setChatDraft("");
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(apiPath("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId: activeMatch.id, message: mine.text }),
       });
       const data = await response.json();
 
-      if (response.ok) {
-        const reply: ChatMessage = {
-          author: "developer",
-          text: data.reply,
-          createdAt: data.createdAt,
-        };
-        setChatByMatch((current) => ({
-          ...current,
-          [activeMatch.id]: [...(current[activeMatch.id] ?? []), reply],
-        }));
+      if (!response.ok) {
+        throw new Error(data.error ?? "chat unavailable");
       }
+
+      const reply: ChatMessage = {
+        author: "developer",
+        text: data.reply,
+        createdAt: data.createdAt,
+      };
+      setChatByMatch((current) => ({
+        ...current,
+        [activeMatch.id]: [...(current[activeMatch.id] ?? []), reply],
+      }));
     } catch {
       const reply: ChatMessage = {
         author: "developer",
@@ -367,11 +384,9 @@ export default function Home() {
       <section className="mx-auto flex w-full max-w-[1380px] flex-col gap-4">
         <div className="motion-in product-frame">
           <header className="product-nav">
-            <div className="flex items-center gap-2">
-              <span className="nav-dot" />
-              <span className="nav-dot" />
-              <span className="nav-dot" />
-              <span className="nav-dot w-8" />
+            <div className="flex items-center gap-3">
+              <DevMatchLogo className="size-9" />
+              <span className="text-sm font-black tracking-[-0.02em] text-[#f4f1eb]">DevMatch</span>
             </div>
             <nav className="hidden items-center gap-1 md:flex">
               {["Deck", "Matches", "GitHub", "Perfil"].map((item) => (
@@ -389,7 +404,7 @@ export default function Home() {
             <section className="flex min-h-[620px] flex-col justify-between rounded-xl bg-[#f4f1eb] p-5 text-[#111111] sm:p-7">
               <div className="space-y-5">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#111111]/10 px-3 py-1 text-xs font-semibold">
-                  <Zap className="size-3.5" />
+                  <DevMatchLogo className="size-5" />
                   DevMatch
                 </div>
                 <div>

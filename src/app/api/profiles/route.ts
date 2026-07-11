@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { companyProfile, developers, scoreDeveloper } from "@/lib/devmatch-data";
 import { getProfilesFromDatabase } from "@/lib/db";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const databaseProfiles = await getProfilesFromDatabase();
+  const databaseProfiles = await getProfilesFromDatabase().catch(() => null);
 
   if (databaseProfiles) {
     return NextResponse.json({

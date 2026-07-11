@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { saveMessageToDatabase } from "@/lib/db";
+import { cleanText } from "@/lib/request-guards";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 const replies = [
   "Legal. Tenho disponibilidade para uma call técnica esta semana.",
@@ -12,8 +13,8 @@ const replies = [
 
 export async function POST(request: Request) {
   const payload = await request.json();
-  const message = String(payload.message ?? "").trim();
-  const matchId = String(payload.matchId ?? "default");
+  const message = cleanText(payload.message, 1000);
+  const matchId = cleanText(payload.matchId, 80) || "default";
 
   if (!message) {
     return NextResponse.json(
@@ -25,16 +26,23 @@ export async function POST(request: Request) {
   const reply = replies[Math.floor(Math.random() * replies.length)];
   const createdAt = new Date().toISOString();
 
-  await saveMessageToDatabase({
-    author: "company",
-    body: message,
-    matchKey: matchId,
-  });
-  await saveMessageToDatabase({
-    author: "developer",
-    body: reply,
-    matchKey: matchId,
-  });
+  try {
+    await saveMessageToDatabase({
+      author: "company",
+      body: message,
+      matchKey: matchId,
+    });
+    await saveMessageToDatabase({
+      author: "developer",
+      body: reply,
+      matchKey: matchId,
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Nao foi possivel salvar a mensagem agora." },
+      { status: 503 },
+    );
+  }
 
   return NextResponse.json({
     reply,
