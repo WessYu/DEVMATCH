@@ -43,67 +43,7 @@ npm run lint
 npm run build
 ```
 
-## Backend Neon no Vercel
 
-Configure a variavel `DATABASE_URL` no Vercel usando a connection string do Neon. O valor nao deve ser commitado.
-
-No primeiro request com banco disponivel, o app cria automaticamente:
-
-- `devmatch_users`
-- `devmatch_profiles`
-- `devmatch_matches`
-- `devmatch_messages`
-
-Os perfis iniciais tambem sao sincronizados no banco. Sem `DATABASE_URL`, o app continua funcionando com fallback local.
-
-## Gerar build para GitHub Pages localmente
-
-No PowerShell:
-
-```powershell
-$env:GITHUB_PAGES="true"
-$env:NEXT_OUTPUT_EXPORT="true"
-$env:NEXT_PUBLIC_BASE_PATH="/DEVMATCH"
-npm run build
-Remove-Item Env:\GITHUB_PAGES
-Remove-Item Env:\NEXT_OUTPUT_EXPORT
-Remove-Item Env:\NEXT_PUBLIC_BASE_PATH
-```
-
-O build estatico sai em `out/`.
-
-## Deploy no GitHub Pages
-
-O arquivo `.github/workflows/pages.yml` publica o projeto no GitHub Pages quando houver push na branch `master`.
-
-Antes do primeiro deploy, no GitHub:
-
-1. Abra `Settings > Pages`.
-2. Em `Build and deployment`, selecione `GitHub Actions`.
-3. Envie este repositorio para o GitHub.
-4. A Action `Deploy DevMatch to GitHub Pages` vai gerar e publicar o `out/`.
-
-Para um repositorio chamado `DEVMATCH`, a URL esperada fica no formato:
-
-```text
-https://SEU_USUARIO.github.io/DEVMATCH/
-```
-
-## Rotas internas
-
-- `GET /api/profiles`: perfis de devs com compatibilidade
-- `POST /api/auth`: cria uma sessao leve para empresa ou dev
-- `POST /api/matches`: recebe likes e retorna matches
-- `POST /api/chat`: retorna uma resposta simulada do dev
-- `GET /api/github?user=vercel`: importa repositorios publicos
-
-## Proximos passos para virar SaaS real
-
-- Trocar sessao leve por Firebase Auth ou JWT assinado
-- Persistir perfis, matches e chat em MongoDB, Firestore ou Postgres
-- Adicionar upload real de foto para devs
-- Criar painel admin para aprovar empresas e moderar perfis
-- Conectar um motor externo ao ranking de compatibilidade
 
 ## Nota de audit
 
