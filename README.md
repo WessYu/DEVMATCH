@@ -1,50 +1,81 @@
 # DevMatch
 
-DevMatch e um Tinder de devs com portfolio interativo, match para empresas, chat e leitura de repositorios reais do GitHub.
+> **An intelligent recruitment platform that connects companies with software developers through portfolio analysis, technical compatibility, and interactive hiring workflows.**
 
-## Stack
+---
 
-- Next.js App Router
+## Overview
+
+DevMatch is a modern recruitment platform designed to simplify how companies discover and evaluate software developers.
+
+Instead of relying only on resumes, recruiters can explore developer portfolios, analyze GitHub projects, evaluate technical compatibility, and connect with candidates through an interactive hiring experience.
+
+For developers, DevMatch acts as a living portfolio where skills, projects, and experience become part of the hiring process.
+
+---
+
+## Features
+
+- Company and Developer accounts
+- Interactive developer discovery
+- Technical compatibility scoring
+- Portfolio management
+- Match management for recruiters
+- Built-in messaging
+- GitHub repository integration
+- Dark modern interface with GSAP animations
+
+---
+
+## Tech Stack
+
+- Next.js (App Router)
+- React
 - TypeScript
 - Tailwind CSS
 - GSAP
-- Lucide React
-- Route Handlers como backend inicial
-- Export estatico para GitHub Pages
-- Neon Postgres quando `DATABASE_URL` estiver configurada
+- Route Handlers
+- Neon PostgreSQL
 
-## O que ja esta implementado
+---
 
-- Login/cadastro leve para empresa ou dev
-- Perfil publico editavel no navegador
-- Deck de swipe com like/dislike
-- Filtros por stack
-- Ranking de compatibilidade por vaga
-- Lista de matches
-- Chat entre empresa e dev
-- Leitura de repositorios do GitHub
-- Layout dark cyberpunk com glassmorphism, neon roxo, ciano e motion com GSAP
-- Workflow de deploy para GitHub Pages
-- Backend pronto para Vercel com Neon
+## Roadmap
 
-## Rodar localmente
+- Real authentication
+- Persistent database
+- Job posting system
+- AI-powered candidate recommendations
+- Recruiter dashboard
+- Analytics
+- Notifications
+
+---
+
+## Running Locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Acesse `http://localhost:3000`.
+Open:
 
-## Validar producao
+```
+http://localhost:3000
+```
+
+---
+
+## Production
 
 ```bash
-npm run lint
 npm run build
 ```
 
+---
 
+## Vision
 
-## Nota de audit
+DevMatch aims to modernize technical recruitment by replacing static resumes with interactive developer profiles and meaningful technical evaluation.
 
-`npm audit` reporta 2 vulnerabilidades moderadas transitivas em `postcss` dentro do `next@16.2.10`. O fix automatico sugerido pelo npm forca downgrade para `next@9.3.3`, entao foi mantida a versao moderna e compativel com o App Router.
+The goal is to help companies identify talent faster while giving developers a better way to showcase their work.
