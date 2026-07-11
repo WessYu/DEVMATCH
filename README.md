@@ -82,16 +82,4 @@ https://SEU_USUARIO.github.io/DEVMATCH/
 - `POST /api/chat`: retorna uma resposta simulada do dev
 - `GET /api/github?user=vercel`: importa repositorios publicos
 
-No GitHub Pages, essas rotas nao rodam como backend Node. Por isso o front tem fallback client-side para login, matches, chat e GitHub.
 
-## Proximos passos para virar SaaS real
-
-- Trocar sessao leve por Firebase Auth ou JWT assinado
-- Persistir perfis, matches e chat em MongoDB, Firestore ou Postgres
-- Adicionar upload real de foto para devs
-- Criar painel admin para aprovar empresas e moderar perfis
-- Ligar um modelo de IA externo ao motor de compatibilidade
-
-## Nota de audit
-
-`npm audit` reporta 2 vulnerabilidades moderadas transitivas em `postcss` dentro do `next@16.2.10`. O fix automatico sugerido pelo npm forca downgrade para `next@9.3.3`, entao foi mantida a versao moderna e compativel com o App Router.
