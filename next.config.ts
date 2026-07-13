@@ -7,6 +7,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const nextConfig: NextConfig = {
   distDir: isStaticExport ? ".next-pages" : undefined,
   output: isStaticExport ? "export" : undefined,
+  trailingSlash: isStaticExport,
   basePath: isGitHubPages ? basePath : undefined,
   assetPrefix: isGitHubPages ? `${basePath}/` : undefined,
   images: {
