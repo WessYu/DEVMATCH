@@ -17,7 +17,7 @@ Plataforma SaaS full-stack que conecta empresas e desenvolvedores por meio de pe
 <br />
 
 <a href="https://wessyu.github.io/DEVMATCH/">
-  <img src="https://image.thum.io/get/width/1400/crop/900/noanimate/https://wessyu.github.io/DEVMATCH/" width="100%" alt="Preview da interface principal do DevMatch" />
+  <img src="./docs/devmatch-preview.svg" width="100%" alt="Preview da interface principal do DevMatch" />
 </a>
 
 <sub>Clique na imagem para abrir a demonstração.</sub>
