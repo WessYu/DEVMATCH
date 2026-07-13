@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./docs/devmatch-logo.svg" width="92" alt="Logo do DevMatch" />
+
 # DevMatch
 
 ### Recrutamento técnico com contexto
@@ -11,6 +13,14 @@ Plataforma SaaS full-stack que conecta empresas e desenvolvedores por meio de pe
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/Neon-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+
+<br />
+
+<a href="https://wessyu.github.io/DEVMATCH/">
+  <img src="https://image.thum.io/get/width/1400/crop/900/noanimate/https://wessyu.github.io/DEVMATCH/" width="100%" alt="Preview da interface principal do DevMatch" />
+</a>
+
+<sub>Clique na imagem para abrir a demonstração.</sub>
 
 </div>
 
