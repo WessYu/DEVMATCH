@@ -9,16 +9,35 @@ const featuredProfiles = fallbackProfiles.slice(0, 3);
 
 const workflow = [
   {
-    title: "Curadoria",
-    text: "Stack, projeto e senioridade no mesmo lugar.",
+    title: "Escolha o lado",
+    text: "Empresa busca talentos. Dev monta o perfil.",
   },
   {
-    title: "Match",
-    text: "Empresa sinaliza interesse e abre conversa.",
+    title: "Faça o match",
+    text: "O deck organiza stack, projeto e aderencia.",
   },
   {
-    title: "Conversa",
-    text: "Chat com contexto do portfolio e da vaga.",
+    title: "Converse",
+    text: "O chat abre com contexto da vaga e do portfolio.",
+  },
+];
+
+const rolePaths = [
+  {
+    href: "/contratante",
+    title: "Sou contratante",
+    text: "Quero ver devs, filtrar stack e abrir matches.",
+    action: "Buscar devs",
+    icon: BriefcaseBusiness,
+    primary: true,
+  },
+  {
+    href: "/dev",
+    title: "Sou dev",
+    text: "Quero montar meu perfil e conectar meu GitHub.",
+    action: "Criar perfil",
+    icon: Code2,
+    primary: false,
   },
 ];
 
@@ -39,31 +58,47 @@ export default function Home() {
 
           <div className="mt-12 max-w-2xl">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#675f55]">
-              Plataforma de contratacao tecnica
+              Comece escolhendo seu lado
             </p>
             <h1 className="mt-3 text-5xl font-black leading-[0.9] tracking-[-0.04em] text-[#111111] sm:text-7xl">
-              DevMatch
+              Contrate ou seja encontrado pelo que voce entrega.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-8 text-[#4a4640]">
-              Um workspace para empresas avaliarem devs por portfolio, codigo e conversa, sem transformar recrutamento em planilha.
+              Empresas entram no deck de candidatos. Devs montam um perfil com portfolio e repositorios. O match leva direto para conversa.
             </p>
           </div>
 
-          <div className="mt-8 flex flex-col gap-2 sm:flex-row">
-            <Link className="home-primary-action" href="/contratante">
-              Entrar como contratante
+          <div className="mt-8 grid gap-3">
+            {rolePaths.map((role) => {
+              const Icon = role.icon;
+
+              return (
+                <Link className={`home-role-card ${role.primary ? "is-primary" : ""}`} href={role.href} key={role.href}>
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#111111] text-white">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-lg font-black text-[#111111]">{role.title}</span>
+                    <span className="mt-1 block text-sm leading-6 text-[#4a4640]">{role.text}</span>
+                  </span>
+                  <span className="home-role-action">
+                    {role.action}
+                    <ArrowRight className="size-4" />
+                  </span>
+                </Link>
+              );
+            })}
+            <Link className="home-chat-shortcut" href="/chat">
+              <MessageCircle className="size-4" />
+              Ja tenho match e quero abrir o chat
               <ArrowRight className="size-4" />
-            </Link>
-            <Link className="home-secondary-action" href="/dev">
-              Montar perfil dev
-              <Code2 className="size-4" />
             </Link>
           </div>
 
-          <div className="mt-10 grid gap-2 sm:grid-cols-3">
-            <HomeMetric label="devs no deck" value="5" />
-            <HomeMetric label="areas" value="3" />
-            <HomeMetric label="fluxo" value="match" />
+          <div className="mt-auto grid gap-2 pt-8 sm:grid-cols-3">
+            <HomeMetric label="passo 1" value="Escolha" />
+            <HomeMetric label="passo 2" value="Match" />
+            <HomeMetric label="passo 3" value="Chat" />
           </div>
         </div>
 
@@ -71,7 +106,7 @@ export default function Home() {
           <div className="home-preview-toolbar">
             <span className="flex items-center gap-2 text-sm font-black text-white">
               <Sparkles className="size-4 text-cyan-200" />
-              Pipeline de talentos
+              Visao geral do fluxo
             </span>
             <Link className="text-xs font-black text-cyan-100" href="/chat">
               Abrir chat
@@ -82,11 +117,11 @@ export default function Home() {
             <section className="home-preview-main">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Deck</p>
-                  <h2 className="mt-1 text-2xl font-black text-white">Candidatos em revisao</h2>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Para contratantes</p>
+                  <h2 className="mt-1 text-2xl font-black text-white">Deck de devs pronto para avaliar</h2>
                 </div>
                 <span className="rounded-full bg-cyan-300 px-3 py-1 text-xs font-black text-[#111111]">
-                  ao vivo
+                  5 perfis
                 </span>
               </div>
 
@@ -110,10 +145,10 @@ export default function Home() {
               <div className="rounded-xl bg-[#f4f1eb] p-4 text-[#111111]">
                 <div className="flex items-center gap-2 text-sm font-black">
                   <BriefcaseBusiness className="size-4" />
-                  Front-end SaaS
+                  Vaga em foco
                 </div>
                 <p className="mt-3 text-sm leading-6 text-[#4a4640]">
-                  React, Next.js, TypeScript e produto B2B com colaboracao remota.
+                  Front-end SaaS com React, Next.js, TypeScript e produto B2B.
                 </p>
               </div>
 
