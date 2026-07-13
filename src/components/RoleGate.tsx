@@ -87,7 +87,7 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
       <div className="role-gate-copy">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#111111]/10 px-3 py-1 text-xs font-black">
           <Icon className="size-4" />
-          Area exclusiva
+          Acesso restrito
         </div>
         <h1 className="mt-8 text-5xl font-black leading-[0.92] tracking-[-0.04em] text-[#111111]">{title}</h1>
         <p className="mt-5 max-w-lg text-base leading-7 text-[#4a4640]">{text}</p>

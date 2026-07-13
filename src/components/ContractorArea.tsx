@@ -114,10 +114,10 @@ export function ContractorArea() {
       <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Area do contratante</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Contrate olhando entrega, nao promessa.</h1>
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Workspace do contratante</p>
+          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Pipeline de avaliacao tecnica.</h1>
           <p className="mt-4 text-sm leading-6 text-[#4a4640]">
-            Filtre por stack, revise projetos reais e mande match para abrir conversa com contexto.
+            Revise candidatos por stack, evidencias de portfolio e status de match.
           </p>
           <div className="mt-5 grid grid-cols-3 gap-2">
             <Metric value={profiles.length} label="devs" />
@@ -147,8 +147,8 @@ export function ContractorArea() {
       <section className="motion-in product-frame min-w-0">
         <div className="flex flex-col gap-3 border-b border-white/10 p-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Deck de candidatos</p>
-            <h2 className="mt-1 text-2xl font-black text-white">Perfis com foto, portfolio e codigo</h2>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Shortlist</p>
+            <h2 className="mt-1 text-2xl font-black text-white">Candidatos para revisao</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {stackOptions.map((stack) => (

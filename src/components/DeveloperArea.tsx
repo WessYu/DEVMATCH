@@ -97,10 +97,10 @@ export function DeveloperArea() {
       <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Area do dev</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Perfil que mostra decisao, nao enfeite.</h1>
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Console do dev</p>
+          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Perfil tecnico pronto para triagem.</h1>
           <p className="mt-4 text-sm leading-6 text-[#4a4640]">
-            Organize bio, stack, projeto principal e repositorios para chegar no chat com contexto.
+            Mantenha bio, stack, projeto principal e repositorios organizados para conversas de contratacao.
           </p>
         </section>
         <AuthPanel defaultMode="developer" lockMode onSessionChange={setSession} session={session} />

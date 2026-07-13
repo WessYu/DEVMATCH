@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BriefcaseBusiness, Code2, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, BriefcaseBusiness, Code2, MessageCircle, PanelTop } from "lucide-react";
 import { ProductShell } from "@/components/ProductShell";
 import { DevMatchLogo } from "@/components/DevMatchLogo";
 import { fallbackProfiles } from "@/lib/client-utils";
@@ -9,33 +9,33 @@ const featuredProfiles = fallbackProfiles.slice(0, 3);
 
 const workflow = [
   {
-    title: "Escolha o lado",
-    text: "Empresa busca talentos. Dev monta o perfil.",
+    title: "Entrada por papel",
+    text: "Cada conta acessa somente o workspace correto.",
   },
   {
-    title: "Faça o match",
-    text: "O deck organiza stack, projeto e aderencia.",
+    title: "Triagem objetiva",
+    text: "Stack, projeto, senioridade e aderencia ficam juntos.",
   },
   {
-    title: "Converse",
-    text: "O chat abre com contexto da vaga e do portfolio.",
+    title: "Conversa registrada",
+    text: "A conversa nasce do match e mantem o contexto.",
   },
 ];
 
 const rolePaths = [
   {
     href: "/contratante",
-    title: "Sou contratante",
-    text: "Quero ver devs, filtrar stack e abrir matches.",
-    action: "Buscar devs",
+    title: "Contratante",
+    text: "Revisar candidatos, montar shortlist e abrir conversas.",
+    action: "Abrir pipeline",
     icon: BriefcaseBusiness,
     primary: true,
   },
   {
     href: "/dev",
-    title: "Sou dev",
-    text: "Quero montar meu perfil e conectar meu GitHub.",
-    action: "Criar perfil",
+    title: "Dev",
+    text: "Gerenciar portfolio, stack, GitHub e conversas abertas.",
+    action: "Abrir console",
     icon: Code2,
     primary: false,
   },
@@ -52,19 +52,19 @@ export default function Home() {
               DevMatch
             </div>
             <span className="rounded-full bg-[#111111] px-3 py-1 text-xs font-black text-white">
-              beta privado
+              workspace ativo
             </span>
           </div>
 
-          <div className="mt-12 max-w-2xl">
+          <div className="mt-10 max-w-2xl">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#675f55]">
-              Comece escolhendo seu lado
+              Plataforma de hiring para times tecnicos
             </p>
-            <h1 className="mt-3 text-5xl font-black leading-[0.9] tracking-[-0.04em] text-[#111111] sm:text-7xl">
-              Contrate ou seja encontrado pelo que voce entrega.
+            <h1 className="mt-3 text-5xl font-black leading-[0.94] tracking-[-0.04em] text-[#111111] sm:text-6xl">
+              Um pipeline limpo para avaliar devs com contexto.
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#4a4640]">
-              Empresas entram no deck de candidatos. Devs montam um perfil com portfolio e repositorios. O match leva direto para conversa.
+            <p className="mt-5 max-w-xl text-base leading-7 text-[#4a4640]">
+              DevMatch separa contratante e dev, organiza sinais tecnicos e leva o match para uma conversa objetiva.
             </p>
           </div>
 
@@ -90,38 +90,38 @@ export default function Home() {
             })}
             <Link className="home-chat-shortcut" href="/chat">
               <MessageCircle className="size-4" />
-              Ja tenho match e quero abrir o chat
+              Tenho uma conversa em andamento
               <ArrowRight className="size-4" />
             </Link>
           </div>
 
           <div className="mt-auto grid gap-2 pt-8 sm:grid-cols-3">
-            <HomeMetric label="passo 1" value="Escolha" />
-            <HomeMetric label="passo 2" value="Match" />
-            <HomeMetric label="passo 3" value="Chat" />
+            <HomeMetric label="triagem" value="5 devs" />
+            <HomeMetric label="fluxo" value="3 areas" />
+            <HomeMetric label="estado" value="online" />
           </div>
         </div>
 
         <div className="home-product-preview">
           <div className="home-preview-toolbar">
             <span className="flex items-center gap-2 text-sm font-black text-white">
-              <Sparkles className="size-4 text-cyan-200" />
-              Visao geral do fluxo
+              <PanelTop className="size-4 text-cyan-200" />
+              Visao do workspace
             </span>
             <Link className="text-xs font-black text-cyan-100" href="/chat">
-              Abrir chat
+              Abrir inbox
             </Link>
           </div>
 
           <div className="home-preview-grid">
             <section className="home-preview-main">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Para contratantes</p>
-                  <h2 className="mt-1 text-2xl font-black text-white">Deck de devs pronto para avaliar</h2>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Pipeline</p>
+                  <h2 className="mt-1 text-2xl font-black text-white">Shortlist tecnica</h2>
                 </div>
                 <span className="rounded-full bg-cyan-300 px-3 py-1 text-xs font-black text-[#111111]">
-                  5 perfis
+                  pronto
                 </span>
               </div>
 
@@ -145,10 +145,10 @@ export default function Home() {
               <div className="rounded-xl bg-[#f4f1eb] p-4 text-[#111111]">
                 <div className="flex items-center gap-2 text-sm font-black">
                   <BriefcaseBusiness className="size-4" />
-                  Vaga em foco
+                  Requisicao ativa
                 </div>
                 <p className="mt-3 text-sm leading-6 text-[#4a4640]">
-                  Front-end SaaS com React, Next.js, TypeScript e produto B2B.
+                  Front-end SaaS, React, Next.js, TypeScript e colaboracao remota.
                 </p>
               </div>
 
@@ -171,8 +171,8 @@ export default function Home() {
                   <MessageCircle className="size-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-black text-white">Conversa aberta</span>
-                  <span className="block truncate text-xs text-slate-400">Match com contexto do projeto</span>
+                  <span className="block text-sm font-black text-white">Inbox de matches</span>
+                  <span className="block truncate text-xs text-slate-400">Mensagens com contexto tecnico</span>
                 </span>
                 <BadgeCheck className="size-4 text-cyan-100" />
               </Link>

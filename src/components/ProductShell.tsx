@@ -20,7 +20,10 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
         <header className="product-nav product-frame px-3 py-3">
           <Link className="flex items-center gap-3" href="/">
             <DevMatchLogo className="size-9" />
-            <span className="text-sm font-black tracking-[-0.02em] text-[#f4f1eb]">DevMatch</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-black tracking-[-0.02em] text-[#f4f1eb]">DevMatch</span>
+              <span className="hidden text-[11px] font-bold text-slate-400 sm:block">Hiring workspace</span>
+            </span>
           </Link>
           <nav className="flex min-w-0 items-center justify-center gap-1 overflow-x-auto">
             {navItems.map((item) => {
@@ -36,7 +39,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <Link className="nav-cta hidden sm:inline-flex sm:items-center" href="/chat">
-            Conversas
+            Abrir inbox
           </Link>
         </header>
 

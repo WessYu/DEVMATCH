@@ -23,8 +23,8 @@ html {
 body {
   min-height: 100vh;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 28%),
-    linear-gradient(180deg, #151717 0%, #0d0f10 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 240px),
+    #0f1115;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -51,11 +51,11 @@ button:disabled {
 
 .product-frame {
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 1rem;
-  background: #292c2e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.85rem;
+  background: #1a1d22;
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.38),
+    0 24px 64px rgba(0, 0, 0, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -331,27 +331,27 @@ button:disabled {
 .home-stage {
   display: grid;
   min-height: calc(100vh - 118px);
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 0.65rem;
+  padding: 0.65rem;
 }
 
 .home-hero-panel {
   display: flex;
-  min-height: 620px;
+  min-height: 580px;
   flex-direction: column;
-  border-radius: 0.9rem;
-  background: #f4f1eb;
-  padding: clamp(1.4rem, 3vw, 2.4rem);
+  border-radius: 0.7rem;
+  background: #f3f1ec;
+  padding: clamp(1.25rem, 2.7vw, 2.1rem);
   color: #111111;
 }
 
 .home-role-card {
   display: flex;
-  min-height: 104px;
+  min-height: 96px;
   align-items: center;
   gap: 0.9rem;
   border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 0.95rem;
+  border-radius: 0.72rem;
   background: rgba(255, 255, 255, 0.5);
   padding: 1rem;
   transition:
@@ -362,7 +362,7 @@ button:disabled {
 
 .home-role-card.is-primary {
   border-color: rgba(17, 17, 17, 0.2);
-  background: #ffffff;
+  background: #fbfaf7;
 }
 
 .home-role-card:hover {
@@ -378,7 +378,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  border-radius: 999px;
+  border-radius: 0.55rem;
   background: #111111;
   padding: 0 0.85rem;
   font-size: 0.76rem;
@@ -409,12 +409,12 @@ button:disabled {
 
 .home-product-preview {
   display: flex;
-  min-height: 620px;
+  min-height: 580px;
   flex-direction: column;
-  border-radius: 0.9rem;
+  border-radius: 0.7rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
-    #17191c;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 34%),
+    #151820;
 }
 
 .home-preview-toolbar {
@@ -438,7 +438,7 @@ button:disabled {
 .home-preview-side {
   min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.85rem;
+  border-radius: 0.7rem;
   background: rgba(255, 255, 255, 0.045);
   padding: 1rem;
 }
@@ -451,7 +451,7 @@ button:disabled {
   align-items: center;
   gap: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.8rem;
+  border-radius: 0.68rem;
   background: rgba(255, 255, 255, 0.05);
   padding: 0.75rem;
 }
