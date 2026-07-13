@@ -101,9 +101,24 @@ button:disabled {
 }
 
 .nav-tab:hover,
+.nav-tab.is-active,
 .nav-cta:hover {
   border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(103, 232, 249, 0.16);
   transform: translateY(-1px);
+}
+
+.segmented-button {
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #211f1c;
+}
+
+.segmented-button.is-active {
+  background: #111111;
+  color: #ffffff;
 }
 
 .compact-box {
@@ -134,6 +149,19 @@ button:disabled {
   background: #111111;
   color: #ffffff;
   transform: translateY(-1px);
+}
+
+.dark-chip {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f1eb;
+}
+
+.dark-chip:hover,
+.dark-chip.is-active {
+  border-color: rgba(103, 232, 249, 0.36);
+  background: rgba(103, 232, 249, 0.14);
+  color: #ffffff;
 }
 
 .light-field,
@@ -192,6 +220,12 @@ button:disabled {
   width: 100%;
   background: #111111;
   color: #ffffff;
+}
+
+.light-button.is-secondary {
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  background: #f4f1eb;
+  color: #111111;
 }
 
 .icon-button {
@@ -294,6 +328,94 @@ button:disabled {
   -webkit-line-clamp: 2;
 }
 
+.home-entry-card {
+  display: flex;
+  min-height: 150px;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.055);
+  padding: 1.1rem;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.home-entry-card:hover {
+  border-color: rgba(103, 232, 249, 0.38);
+  background: rgba(103, 232, 249, 0.1);
+  transform: translateY(-2px);
+}
+
+.deck-scroll {
+  display: grid;
+  grid-auto-columns: minmax(300px, 390px);
+  grid-auto-flow: column;
+  gap: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 0.6rem;
+  scroll-padding-inline: 1rem;
+  scroll-snap-type: x mandatory;
+}
+
+.candidate-card {
+  min-height: 720px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.candidate-photo {
+  position: relative;
+  height: 310px;
+  overflow: hidden;
+  background: #1b1d20;
+}
+
+.chat-role {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.55rem;
+  padding: 0 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #cbd5e1;
+}
+
+.chat-role.is-active {
+  background: #67e8f9;
+  color: #111111;
+}
+
+.chat-bubble {
+  max-width: min(620px, 86%);
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.chat-bubble.is-company {
+  margin-left: auto;
+  background: #67e8f9;
+  color: #111111;
+}
+
+.chat-bubble.is-developer {
+  margin-right: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -318,5 +440,17 @@ button:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .deck-scroll {
+    grid-auto-columns: minmax(282px, 86vw);
+  }
+
+  .candidate-card {
+    min-height: 690px;
+  }
+
+  .candidate-photo {
+    height: 280px;
   }
 }
