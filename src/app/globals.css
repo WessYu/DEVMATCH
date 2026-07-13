@@ -328,25 +328,123 @@ button:disabled {
   -webkit-line-clamp: 2;
 }
 
-.home-entry-card {
+.home-stage {
+  display: grid;
+  min-height: calc(100vh - 118px);
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.home-hero-panel {
   display: flex;
-  min-height: 150px;
-  align-items: center;
-  gap: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 620px;
+  flex-direction: column;
   border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.055);
-  padding: 1.1rem;
+  background: #f4f1eb;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  color: #111111;
+}
+
+.home-primary-action,
+.home-secondary-action {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 999px;
+  padding: 0 1.1rem;
+  font-size: 0.86rem;
+  font-weight: 950;
   transition:
     border-color 160ms ease,
     background 160ms ease,
     transform 160ms ease;
 }
 
-.home-entry-card:hover {
-  border-color: rgba(103, 232, 249, 0.38);
+.home-primary-action {
+  background: #111111;
+  color: #ffffff;
+}
+
+.home-secondary-action {
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  color: #111111;
+}
+
+.home-primary-action:hover,
+.home-secondary-action:hover {
+  transform: translateY(-1px);
+}
+
+.home-product-preview {
+  display: flex;
+  min-height: 620px;
+  flex-direction: column;
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
+    #17191c;
+}
+
+.home-preview-toolbar {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 1rem;
+}
+
+.home-preview-grid {
+  display: grid;
+  flex: 1;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.home-preview-main,
+.home-preview-side {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 1rem;
+}
+
+.home-profile-row,
+.home-step,
+.home-chat-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+}
+
+.home-profile-row,
+.home-chat-card {
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.home-profile-row:hover,
+.home-chat-card:hover {
+  border-color: rgba(103, 232, 249, 0.36);
   background: rgba(103, 232, 249, 0.1);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+}
+
+.home-preview-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .deck-scroll {
@@ -452,5 +550,24 @@ button:disabled {
 
   .candidate-photo {
     height: 280px;
+  }
+
+  .home-stage {
+    min-height: auto;
+  }
+
+  .home-hero-panel,
+  .home-product-preview {
+    min-height: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-stage {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  }
+
+  .home-preview-grid {
+    grid-template-columns: minmax(0, 1fr) 280px;
   }
 }
