@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server";
-import { readSessionValue, SESSION_COOKIE } from "@/lib/auth";
+import { readSessionFromRequest, SESSION_COOKIE } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function readCookie(header: string | null, name: string) {
-  return header
-    ?.split(";")
-    .map((item) => item.trim())
-    .find((item) => item.startsWith(`${name}=`))
-    ?.slice(name.length + 1);
-}
-
 export async function GET(request: Request) {
-  const session = readSessionValue(readCookie(request.headers.get("cookie"), SESSION_COOKIE));
+  const session = readSessionFromRequest(request);
 
   if (!session) {
     return NextResponse.json({ user: null }, { status: 401 });

@@ -13,14 +13,19 @@ import {
 
 const storageKey = "devmatch-feed-posts";
 
-function makeLocalPost(form: FormData, session: UserSession): FeedPost {
+type DraftPost = {
+  kind: "post" | "job";
+  title: string;
+  body: string;
+  imageUrl: string;
+  linkUrl: string;
+  tags: string[];
+};
+
+function readDraftPost(form: FormData): DraftPost {
   const tagText = String(form.get("tags") ?? "");
 
   return {
-    id: `local-${Date.now()}`,
-    authorEmail: session.email,
-    authorName: session.name,
-    authorMode: session.mode,
     kind: form.get("kind") === "job" ? "job" : "post",
     title: String(form.get("title") ?? "").trim(),
     body: String(form.get("body") ?? "").trim(),
@@ -34,7 +39,6 @@ function makeLocalPost(form: FormData, session: UserSession): FeedPost {
           .filter(Boolean),
       ),
     ).slice(0, 8),
-    createdAt: new Date().toISOString(),
   };
 }
 
@@ -57,7 +61,7 @@ function mergePosts(localPosts: FeedPost[], remotePosts: FeedPost[]) {
 }
 
 export function FeedArea() {
-  const [session, setSession] = useState<UserSession | null>(() => readJsonStorage("devmatch-session", null));
+  const [session, setSession] = useState<UserSession | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>(() => readJsonStorage(storageKey, []));
   const [kind, setKind] = useState<"post" | "job">("post");
   const [status, setStatus] = useState("");
@@ -71,6 +75,33 @@ export function FeedArea() {
       posts: posts.length - jobs,
     };
   }, [posts]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function restoreSession() {
+      const response = await fetch(apiPath("/api/session"), { cache: "no-store" });
+
+      if (!active) {
+        return;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        setSession(data.user ?? null);
+      }
+    }
+
+    restoreSession().catch(() => {
+      if (active) {
+        setSession(readJsonStorage("devmatch-session", null));
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     async function loadFeed() {
@@ -93,16 +124,17 @@ export function FeedArea() {
 
   async function publish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
 
     if (!session) {
       setStatus("Entre com uma conta para publicar no feed.");
       return;
     }
 
-    const form = new FormData(event.currentTarget);
-    const localPost = makeLocalPost(form, session);
+    const form = new FormData(formElement);
+    const draftPost = readDraftPost(form);
 
-    if (!localPost.title || !localPost.body) {
+    if (!draftPost.title || !draftPost.body) {
       setStatus("Preencha título e conteúdo.");
       return;
     }
@@ -114,35 +146,23 @@ export function FeedArea() {
       const response = await fetch(apiPath("/api/feed"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          author: session,
-          kind: localPost.kind,
-          title: localPost.title,
-          body: localPost.body,
-          imageUrl: localPost.imageUrl,
-          linkUrl: localPost.linkUrl,
-          tags: localPost.tags,
-        }),
+        body: JSON.stringify(draftPost),
       });
       const data = await response.json();
 
       if (!response.ok || !data.post) {
-        throw new Error(data.error ?? "feed unavailable");
+        setStatus(data.error ?? "Não foi possível publicar agora.");
+        return;
       }
 
       const nextPosts = mergePosts(posts, [data.post]);
       setPosts(nextPosts);
       writeJsonStorage(storageKey, nextPosts);
-      event.currentTarget.reset();
+      formElement.reset();
       setKind("post");
       setStatus("Publicado.");
     } catch {
-      const nextPosts = mergePosts(posts, [localPost]);
-      setPosts(nextPosts);
-      writeJsonStorage(storageKey, nextPosts);
-      event.currentTarget.reset();
-      setKind("post");
-      setStatus("Publicado neste navegador. O servidor sincroniza quando estiver disponível.");
+      setStatus("Backend indisponível agora. A publicação não foi salva.");
     } finally {
       setPending(false);
     }
@@ -170,14 +190,14 @@ export function FeedArea() {
       <section className="motion-in product-frame min-w-0">
         <div className="grid gap-4 border-b border-white/10 p-4 lg:grid-cols-[minmax(0,1fr)_420px]">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Mural publico</p>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Mural público</p>
             <h2 className="mt-1 text-2xl font-black text-white">Feed da rede</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              Tudo que entra aqui fica visivel para os dois lados do marketplace.
+              Tudo que entra aqui fica visível para os dois lados do marketplace.
             </p>
           </div>
 
-          <form className="feed-composer" onSubmit={publish}>
+          <form className="feed-composer" method="post" onSubmit={publish}>
             <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/6 p-1">
               <button className={`chat-role ${kind === "post" ? "is-active" : ""}`} name="kind" onClick={() => setKind("post")} type="button" value="post">
                 <PanelTop className="size-4" />

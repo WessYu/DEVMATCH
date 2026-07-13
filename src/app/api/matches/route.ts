@@ -1,48 +1,50 @@
 import { NextResponse } from "next/server";
-import { companyProfile, developers, scoreDeveloper } from "@/lib/devmatch-data";
+import { readSessionFromRequest } from "@/lib/auth";
 import { saveMatchesToDatabase } from "@/lib/db";
-import { cleanDeveloperIds, cleanEmail } from "@/lib/request-guards";
+import { cleanDeveloperIds } from "@/lib/request-guards";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const session = readSessionFromRequest(request);
+
+  if (!session) {
+    return NextResponse.json(
+      { error: "Entre para criar matches." },
+      { status: 401 },
+    );
+  }
+
+  if (session.mode !== "company") {
+    return NextResponse.json(
+      { error: "Apenas contas de contratante podem criar matches." },
+      { status: 403 },
+    );
+  }
+
   const payload = await request.json().catch(() => null);
 
   if (!payload) {
     return NextResponse.json(
-      { error: "Payload invalido." },
+      { error: "Payload inválido." },
       { status: 400 },
     );
   }
 
   const likedIds = cleanDeveloperIds(payload.likedIds);
-  const companyEmail = cleanEmail(payload.companyEmail) || "demo@devmatch.local";
 
   try {
-    const databaseMatches = await saveMatchesToDatabase({
-      companyEmail,
+    const matches = await saveMatchesToDatabase({
+      companyEmail: session.email,
       likedIds,
     });
 
-    if (databaseMatches) {
-      return NextResponse.json({ matches: databaseMatches });
-    }
+    return NextResponse.json({ matches: matches ?? [] });
   } catch {
     return NextResponse.json(
       { error: "Não foi possível salvar o match agora." },
       { status: 503 },
     );
   }
-
-  const matches = developers
-    .filter((developer) => likedIds.includes(developer.id))
-    .map((developer) => ({
-      id: developer.id,
-      name: developer.name,
-      role: developer.role,
-      avatar: developer.avatar,
-      compatibility: scoreDeveloper(developer, companyProfile),
-    }));
-
-  return NextResponse.json({ matches });
 }

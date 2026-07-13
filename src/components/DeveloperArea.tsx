@@ -40,7 +40,7 @@ const initialPortfolio: PortfolioState = {
 };
 
 export function DeveloperArea() {
-  const [session, setSession] = useState<UserSession | null>(() => readJsonStorage("devmatch-session", null));
+  const [session, setSession] = useState<UserSession | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioState>(() => readJsonStorage("devmatch-portfolio", initialPortfolio));
   const [githubUser, setGithubUser] = useState("vercel");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -104,7 +104,7 @@ export function DeveloperArea() {
           </p>
         </section>
         <AuthPanel defaultMode="developer" lockMode onSessionChange={setSession} session={session} />
-        <DarkPanel title="Status publico" icon={<ShieldCheck className="size-5" />}>
+        <DarkPanel title="Status público" icon={<ShieldCheck className="size-5" />}>
           <div className="space-y-2 text-sm text-slate-300">
             <p>{session ? `Logado como ${session.name}` : "Entre ou crie uma conta dev."}</p>
             <p>{saved ? "Perfil salvo neste navegador." : "Alterações são salvas automaticamente e podem ser fixadas no botão salvar."}</p>
@@ -113,7 +113,7 @@ export function DeveloperArea() {
       </aside>
 
       <section className="motion-in product-frame min-w-0 p-4">
-        <form className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]" onSubmit={savePortfolio}>
+        <form className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]" method="post" onSubmit={savePortfolio}>
           <div className="space-y-3">
             <div className="grid gap-3 md:grid-cols-2">
               <input className="field" onChange={(event) => updateField("name", event.target.value)} value={portfolio.name} />

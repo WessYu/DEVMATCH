@@ -91,3 +91,15 @@ export function readSessionValue(value: string | undefined) {
     return null;
   }
 }
+
+function readCookie(header: string | null, name: string) {
+  return header
+    ?.split(";")
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(`${name}=`))
+    ?.slice(name.length + 1);
+}
+
+export function readSessionFromRequest(request: Request) {
+  return readSessionValue(readCookie(request.headers.get("cookie"), SESSION_COOKIE));
+}

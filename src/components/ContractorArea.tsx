@@ -10,7 +10,6 @@ import { DarkPanel } from "@/components/DarkPanel";
 import { RoleGate } from "@/components/RoleGate";
 import {
   apiPath,
-  buildMatches,
   fallbackProfiles,
   readJsonStorage,
   writeJsonStorage,
@@ -26,7 +25,7 @@ export function ContractorArea() {
   const [likedIds, setLikedIds] = useState<string[]>(() => readJsonStorage("devmatch-liked", []));
   const [passedIds, setPassedIds] = useState<string[]>(() => readJsonStorage("devmatch-passed", []));
   const [matches, setMatches] = useState<Match[]>(() => readJsonStorage("devmatch-matches", []));
-  const [session, setSession] = useState<UserSession | null>(() => readJsonStorage("devmatch-session", null));
+  const [session, setSession] = useState<UserSession | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
 
   const visibleProfiles = useMemo(() => {
@@ -48,6 +47,10 @@ export function ContractorArea() {
   }, []);
 
   useEffect(() => {
+    if (!document.querySelector(".motion-in")) {
+      return;
+    }
+
     gsap.fromTo(".motion-in", { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, stagger: 0.04, ease: "power2.out" });
   }, []);
 
@@ -57,7 +60,7 @@ export function ContractorArea() {
   }, [likedIds, passedIds]);
 
   useEffect(() => {
-    if (!likedIds.length) {
+    if (!likedIds.length || session?.mode !== "company") {
       writeJsonStorage("devmatch-matches", []);
       return;
     }
@@ -68,7 +71,6 @@ export function ContractorArea() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            companyEmail: session?.email,
             likedIds,
           }),
         });
@@ -77,14 +79,13 @@ export function ContractorArea() {
         setMatches(data.matches);
         writeJsonStorage("devmatch-matches", data.matches);
       } catch {
-        const fallbackMatches = buildMatches(likedIds, profiles);
-        setMatches(fallbackMatches);
-        writeJsonStorage("devmatch-matches", fallbackMatches);
+        setMatches([]);
+        writeJsonStorage("devmatch-matches", []);
       }
     }
 
     syncMatches().catch(() => undefined);
-  }, [likedIds, profiles, session?.email]);
+  }, [likedIds, session?.mode]);
 
   function likeDeveloper(id: string) {
     setLikedIds((current) => Array.from(new Set([...current, id])));
@@ -148,7 +149,7 @@ export function ContractorArea() {
         <div className="flex flex-col gap-3 border-b border-white/10 p-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Shortlist</p>
-            <h2 className="mt-1 text-2xl font-black text-white">Candidatos para revisao</h2>
+            <h2 className="mt-1 text-2xl font-black text-white">Candidatos para revisão</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {stackOptions.map((stack) => (
@@ -176,7 +177,7 @@ export function ContractorArea() {
               return (
                 <article className="candidate-card" key={developer.id}>
                   <div className="candidate-photo">
-                    <Image alt={`Foto de ${developer.name}`} className="h-full w-full object-cover" height={720} src={developer.avatar} width={640} />
+                    <Image alt={`Foto de ${developer.name}`} className="h-full w-full object-cover" height={720} src={developer.avatar} unoptimized width={640} />
                       <div className="absolute left-3 top-3 rounded-full bg-[#f4f1eb] px-3 py-1 text-xs font-black text-[#111111]">
                       {developer.compatibility.score}% aderente
                     </div>
@@ -234,8 +235,8 @@ export function ContractorArea() {
           {matches.length ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {matches.map((match) => (
-                <Link className="match-row" href={`/chat?match=${match.id}`} key={match.id}>
-                  <Image alt="" className="size-12 rounded-lg object-cover" height={48} src={match.avatar} width={48} />
+                <Link className="match-row" href={`/chat?match=${match.matchKey}`} key={match.matchKey}>
+                  <Image alt="" className="size-12 rounded-lg object-cover" height={48} src={match.avatar} unoptimized width={48} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-white">{match.name}</span>
                     <span className="flex items-center gap-1 text-xs text-cyan-100">

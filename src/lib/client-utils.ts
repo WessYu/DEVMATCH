@@ -20,6 +20,7 @@ export type UserSession = {
 
 export type Match = {
   id: string;
+  matchKey: string;
   name: string;
   role: string;
   avatar: string;
@@ -58,6 +59,7 @@ export function buildMatches(ids: string[], profiles: EnrichedDeveloper[]) {
     .filter((developer) => ids.includes(developer.id))
     .map((developer) => ({
       id: developer.id,
+      matchKey: developer.id,
       name: developer.name,
       role: developer.role,
       avatar: developer.avatar,

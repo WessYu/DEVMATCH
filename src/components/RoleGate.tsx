@@ -78,7 +78,7 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
     };
   }, [onSessionChange]);
 
-  if (session?.mode === mode) {
+  if (checked && session?.mode === mode) {
     return <>{children}</>;
   }
 

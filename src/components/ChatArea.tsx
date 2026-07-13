@@ -4,16 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { BriefcaseBusiness, Code2, MessageCircle, Send } from "lucide-react";
-import { apiPath, fallbackProfiles, readJsonStorage, writeJsonStorage, type ChatMessage, type Match } from "@/lib/client-utils";
-
-const starterMatches: Match[] = fallbackProfiles.slice(0, 2).map((developer) => ({
-  id: developer.id,
-  name: developer.name,
-  role: developer.role,
-  avatar: developer.avatar,
-  compatibility: developer.compatibility,
-}));
+import { BriefcaseBusiness, MessageCircle, Send } from "lucide-react";
+import { apiPath, readJsonStorage, writeJsonStorage, type ChatMessage, type Match } from "@/lib/client-utils";
 
 function messageKey(message: ChatMessage) {
   return `${message.author}|${message.createdAt}|${message.text}`;
@@ -35,24 +27,24 @@ function mergeMessages(localMessages: ChatMessage[], remoteMessages: ChatMessage
 
 export function ChatArea() {
   const searchParams = useSearchParams();
-  const savedMatches = readJsonStorage<Match[]>("devmatch-matches", []);
-  const matches = savedMatches.length ? savedMatches : starterMatches;
+  const matches = readJsonStorage<Match[]>("devmatch-matches", []);
   const requestedMatch = searchParams.get("match");
-  const [activeMatchId, setActiveMatchId] = useState(requestedMatch || matches[0]?.id || "");
-  const [sender, setSender] = useState<"company" | "developer">("company");
+  const [activeMatchKey, setActiveMatchKey] = useState(requestedMatch || matches[0]?.matchKey || "");
   const [draft, setDraft] = useState("");
+  const [status, setStatus] = useState("");
   const [chatByMatch, setChatByMatch] = useState<Record<string, ChatMessage[]>>(() =>
     readJsonStorage("devmatch-chat", {}),
   );
 
-  const activeMatch = matches.find((match) => match.id === activeMatchId) ?? matches[0];
-  const activeChat = activeMatch ? chatByMatch[activeMatch.id] ?? [] : [];
+  const activeMatch = matches.find((match) => match.matchKey === activeMatchKey || match.id === activeMatchKey) ?? matches[0];
+  const currentMatchKey = activeMatch?.matchKey ?? "";
+  const activeChat = currentMatchKey ? chatByMatch[currentMatchKey] ?? [] : [];
   const groupedChat = activeChat.slice(-40);
 
-  function persistChat(matchId: string, messages: ChatMessage[]) {
+  function persistChat(matchKey: string, messages: ChatMessage[]) {
     const nextState = {
       ...chatByMatch,
-      [matchId]: messages,
+      [matchKey]: messages,
     };
 
     setChatByMatch(nextState);
@@ -60,14 +52,14 @@ export function ChatArea() {
   }
 
   useEffect(() => {
-    if (!activeMatchId) {
+    if (!currentMatchKey) {
       return;
     }
 
     let cancelled = false;
 
     async function loadMessages() {
-      const response = await fetch(apiPath(`/api/chat?matchId=${encodeURIComponent(activeMatchId)}`), {
+      const response = await fetch(apiPath(`/api/chat?matchId=${encodeURIComponent(currentMatchKey)}`), {
         cache: "no-store",
       });
       const data = await response.json();
@@ -77,10 +69,10 @@ export function ChatArea() {
       }
 
       setChatByMatch((current) => {
-        const merged = mergeMessages(current[activeMatchId] ?? [], data.messages);
+        const merged = mergeMessages(current[currentMatchKey] ?? [], data.messages);
         const nextState = {
           ...current,
-          [activeMatchId]: merged,
+          [currentMatchKey]: merged,
         };
         writeJsonStorage("devmatch-chat", nextState);
         return nextState;
@@ -92,23 +84,17 @@ export function ChatArea() {
     return () => {
       cancelled = true;
     };
-  }, [activeMatchId]);
+  }, [currentMatchKey]);
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!activeMatch || !draft.trim()) {
+    if (!activeMatch || !currentMatchKey || !draft.trim()) {
       return;
     }
 
-    const message: ChatMessage = {
-      author: sender,
-      text: draft.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    const optimisticMessages = [...activeChat, message];
-
-    persistChat(activeMatch.id, optimisticMessages);
+    const text = draft.trim();
+    setStatus("");
     setDraft("");
 
     try {
@@ -116,22 +102,22 @@ export function ChatArea() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          author: sender,
-          matchId: activeMatch.id,
-          message: message.text,
+          matchId: currentMatchKey,
+          message: text,
         }),
       });
       const data = await response.json();
 
       if (response.ok && data.message) {
-        const savedMessage = data.message as ChatMessage;
-        persistChat(
-          activeMatch.id,
-          optimisticMessages.map((item) => (item.createdAt === message.createdAt ? savedMessage : item)),
-        );
+        persistChat(currentMatchKey, [...activeChat, data.message as ChatMessage]);
+        return;
       }
+
+      setDraft(text);
+      setStatus(data.error ?? "Não foi possível enviar a mensagem.");
     } catch {
-      // The local message remains available if the network is offline.
+      setDraft(text);
+      setStatus("Backend indisponível agora.");
     }
   }
 
@@ -144,8 +130,8 @@ export function ChatArea() {
         </div>
         <div className="mt-3 space-y-2">
           {matches.map((match) => (
-            <button className={`match-row ${activeMatch?.id === match.id ? "is-active" : ""}`} key={match.id} onClick={() => setActiveMatchId(match.id)} type="button">
-              <Image alt="" className="size-12 rounded-lg object-cover" height={48} src={match.avatar} width={48} />
+            <button className={`match-row ${activeMatch?.matchKey === match.matchKey ? "is-active" : ""}`} key={match.matchKey} onClick={() => setActiveMatchKey(match.matchKey)} type="button">
+              <Image alt="" className="size-12 rounded-lg object-cover" height={48} src={match.avatar} unoptimized width={48} />
               <span className="min-w-0 flex-1 text-left">
                 <span className="block truncate text-sm font-bold text-white">{match.name}</span>
                 <span className="block truncate text-xs text-slate-400">{match.role}</span>
@@ -164,21 +150,11 @@ export function ChatArea() {
           <>
             <header className="flex flex-col gap-3 border-b border-white/10 p-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
-                <Image alt="" className="size-14 rounded-xl object-cover" height={56} src={activeMatch.avatar} width={56} />
+                <Image alt="" className="size-14 rounded-xl object-cover" height={56} src={activeMatch.avatar} unoptimized width={56} />
                 <div>
                   <h2 className="text-2xl font-black text-white">{activeMatch.name}</h2>
                   <p className="text-sm text-slate-400">{activeMatch.role}</p>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/6 p-1">
-                <button className={`chat-role ${sender === "company" ? "is-active" : ""}`} onClick={() => setSender("company")} type="button">
-                  <BriefcaseBusiness className="size-4" />
-                  Contratante
-                </button>
-                <button className={`chat-role ${sender === "developer" ? "is-active" : ""}`} onClick={() => setSender("developer")} type="button">
-                  <Code2 className="size-4" />
-                  Dev
-                </button>
               </div>
             </header>
 
@@ -209,12 +185,13 @@ export function ChatArea() {
               </div>
             </div>
 
-            <form className="flex gap-2 border-t border-white/10 p-4" onSubmit={sendMessage}>
+            <form className="flex gap-2 border-t border-white/10 p-4" method="post" onSubmit={sendMessage}>
               <input className="field" onChange={(event) => setDraft(event.target.value)} placeholder="Mensagem" value={draft} />
               <button className="icon-button min-w-12" type="submit">
                 <Send className="size-4" />
               </button>
             </form>
+            {status ? <p className="border-t border-white/10 px-4 pb-4 text-xs font-bold text-red-200">{status}</p> : null}
           </>
         ) : (
           <div className="grid flex-1 place-items-center p-8 text-center">

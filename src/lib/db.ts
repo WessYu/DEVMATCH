@@ -24,7 +24,8 @@ type DbDeveloperRow = {
 };
 
 type DbMatchRow = {
-  id: string;
+  match_key: string;
+  developer_id: string;
   name: string;
   role: string;
   avatar: string;
@@ -32,6 +33,13 @@ type DbMatchRow = {
   signals: DeveloperProfile["signals"];
   projects: DeveloperProfile["projects"];
   seniority: DeveloperProfile["seniority"];
+};
+
+type DbMatchAccessRow = {
+  match_key: string;
+  company_email: string;
+  developer_id: string;
+  developer_email: string | null;
 };
 
 type DbUserRow = {
@@ -83,10 +91,20 @@ type LocalMessageRecord = {
   createdAt: string;
 };
 
+type LocalMatchRecord = {
+  matchKey: string;
+  companyEmail: string;
+  developerId: string;
+  developerEmail: string | null;
+  createdAt: string;
+};
+
 let sqlClient: NeonQueryFunction<false, false> | null = null;
 let schemaReady: Promise<void> | null = null;
+let localMatchId = 0;
 let localMessageId = 0;
 let localFeedPostId = 0;
+const localMatches: LocalMatchRecord[] = [];
 const localMessages: LocalMessageRecord[] = [];
 const localFeedPosts: FeedPostRecord[] = [];
 
@@ -153,10 +171,13 @@ export async function ensureSchema() {
           id bigserial primary key,
           company_email text not null,
           developer_id text not null references devmatch_profiles(id) on delete cascade,
+          developer_email text,
           created_at timestamptz not null default now(),
           unique (company_email, developer_id)
         )
       `;
+
+      await sql`alter table devmatch_matches add column if not exists developer_email text`;
 
       await sql`
         create table if not exists devmatch_messages (
@@ -359,7 +380,42 @@ export async function saveMatchesToDatabase({
   const sql = getSql();
 
   if (!sql) {
-    return null;
+    for (const developerId of likedIds) {
+      const existingMatch = localMatches.find(
+        (match) => match.companyEmail === companyEmail && match.developerId === developerId,
+      );
+
+      if (!existingMatch) {
+        localMatches.push({
+          matchKey: `local-${++localMatchId}`,
+          companyEmail,
+          developerId,
+          developerEmail: null,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    return localMatches
+      .filter((match) => match.companyEmail === companyEmail)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .map((match) => {
+        const developer = developers.find((item) => item.id === match.developerId);
+
+        if (!developer) {
+          return null;
+        }
+
+        return {
+          id: developer.id,
+          matchKey: match.matchKey,
+          name: developer.name,
+          role: developer.role,
+          avatar: developer.avatar,
+          compatibility: scoreDeveloper(developer, companyProfile),
+        };
+      })
+      .filter((match) => Boolean(match));
   }
 
   await ensureSchema();
@@ -374,7 +430,8 @@ export async function saveMatchesToDatabase({
 
   const rows = await sql`
     select
-      p.id,
+      m.id::text as match_key,
+      p.id as developer_id,
       p.name,
       p.role,
       p.avatar,
@@ -389,13 +446,15 @@ export async function saveMatchesToDatabase({
   ` as DbMatchRow[];
 
   return rows.map((developer) => ({
-    id: developer.id,
+    id: developer.developer_id,
+    matchKey: developer.match_key,
     name: developer.name,
     role: developer.role,
     avatar: developer.avatar,
     compatibility: scoreDeveloper(
       {
         ...developer,
+        id: developer.developer_id,
         location: "",
         bio: "",
         salary: "",
@@ -405,6 +464,51 @@ export async function saveMatchesToDatabase({
       companyProfile,
     ),
   }));
+}
+
+export async function getMatchAccess(matchKey: string) {
+  const sql = getSql();
+
+  if (!sql) {
+    const match = localMatches.find((item) => item.matchKey === matchKey);
+
+    if (!match) {
+      return null;
+    }
+
+    return {
+      matchKey: match.matchKey,
+      companyEmail: match.companyEmail,
+      developerId: match.developerId,
+      developerEmail: match.developerEmail,
+    };
+  }
+
+  await ensureSchema();
+
+  const rows = await sql`
+    select
+      id::text as match_key,
+      company_email,
+      developer_id,
+      developer_email
+    from devmatch_matches
+    where id::text = ${matchKey}
+    limit 1
+  ` as DbMatchAccessRow[];
+
+  const match = rows[0];
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    matchKey: match.match_key,
+    companyEmail: match.company_email,
+    developerId: match.developer_id,
+    developerEmail: match.developer_email,
+  };
 }
 
 export async function saveMessageToDatabase({

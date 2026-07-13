@@ -143,7 +143,7 @@ export default function Home() {
               <div className="mt-5 grid gap-3">
                 {featuredProfiles.map((profile) => (
                   <Link className="home-profile-row" href="/contratante" key={profile.id}>
-                    <Image alt={`Foto de ${profile.name}`} className="size-14 rounded-xl object-cover" height={56} src={profile.avatar} width={56} />
+                    <Image alt={`Foto de ${profile.name}`} className="size-14 rounded-xl object-cover" height={56} src={profile.avatar} unoptimized width={56} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-black text-white">{profile.name}</span>
                       <span className="mt-1 block truncate text-xs text-slate-400">{profile.role}</span>
@@ -171,7 +171,7 @@ export default function Home() {
                 <div className="home-candidate-detail">
                   <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Candidato em foco</p>
                   <div className="mt-3 flex items-center gap-3">
-                    <Image alt="" className="size-12 rounded-xl object-cover" height={48} src={selectedProfile.avatar} width={48} />
+                    <Image alt="" className="size-12 rounded-xl object-cover" height={48} src={selectedProfile.avatar} unoptimized width={48} />
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-black text-white">{selectedProfile.name}</span>
                       <span className="block truncate text-xs text-cyan-100">{selectedProfile.role}</span>
