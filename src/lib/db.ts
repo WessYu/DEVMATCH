@@ -34,6 +34,13 @@ type DbMatchRow = {
   seniority: DeveloperProfile["seniority"];
 };
 
+type DbUserRow = {
+  email: string;
+  name: string;
+  mode: "company" | "developer";
+  password_hash: string | null;
+};
+
 let sqlClient: NeonQueryFunction<false, false> | null = null;
 let schemaReady: Promise<void> | null = null;
 
@@ -67,9 +74,14 @@ export async function ensureSchema() {
           email text primary key,
           name text not null,
           mode text not null check (mode in ('company', 'developer')),
+          password_hash text,
+          updated_at timestamptz not null default now(),
           created_at timestamptz not null default now()
         )
       `;
+
+      await sql`alter table devmatch_users add column if not exists password_hash text`;
+      await sql`alter table devmatch_users add column if not exists updated_at timestamptz not null default now()`;
 
       await sql`
         create table if not exists devmatch_profiles (
@@ -216,7 +228,62 @@ export async function saveUserToDatabase(user: {
     values (${user.email}, ${user.name}, ${user.mode})
     on conflict (email) do update set
       name = excluded.name,
-      mode = excluded.mode
+      mode = excluded.mode,
+      updated_at = now()
+  `;
+}
+
+export async function findUserByEmail(email: string) {
+  const sql = getSql();
+
+  if (!sql) {
+    return null;
+  }
+
+  await ensureSchema();
+
+  const rows = await sql`
+    select email, name, mode, password_hash
+    from devmatch_users
+    where email = ${email}
+    limit 1
+  ` as DbUserRow[];
+
+  const user = rows[0];
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    email: user.email,
+    name: user.name,
+    mode: user.mode,
+    passwordHash: user.password_hash,
+  };
+}
+
+export async function saveUserWithPassword(user: {
+  email: string;
+  name: string;
+  mode: "company" | "developer";
+  passwordHash: string;
+}) {
+  const sql = getSql();
+
+  if (!sql) {
+    return;
+  }
+
+  await ensureSchema();
+  await sql`
+    insert into devmatch_users (email, name, mode, password_hash)
+    values (${user.email}, ${user.name}, ${user.mode}, ${user.passwordHash})
+    on conflict (email) do update set
+      name = excluded.name,
+      mode = excluded.mode,
+      password_hash = excluded.password_hash,
+      updated_at = now()
   `;
 }
 

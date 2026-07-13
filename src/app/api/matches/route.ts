@@ -6,7 +6,15 @@ import { cleanDeveloperIds, cleanEmail } from "@/lib/request-guards";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const payload = await request.json();
+  const payload = await request.json().catch(() => null);
+
+  if (!payload) {
+    return NextResponse.json(
+      { error: "Payload invalido." },
+      { status: 400 },
+    );
+  }
+
   const likedIds = cleanDeveloperIds(payload.likedIds);
   const companyEmail = cleanEmail(payload.companyEmail) || "demo@devmatch.local";
 

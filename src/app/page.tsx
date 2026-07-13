@@ -9,6 +9,8 @@ import {
   Code2,
   GitPullRequest,
   Heart,
+  KeyRound,
+  LogOut,
   MessageCircle,
   Search,
   ShieldCheck,
@@ -122,7 +124,9 @@ export default function Home() {
     return savedSession ? (JSON.parse(savedSession) as UserSession) : null;
   });
   const [authMode, setAuthMode] = useState<"company" | "developer">("company");
+  const [authIntent, setAuthIntent] = useState<"signup" | "signin">("signup");
   const [authError, setAuthError] = useState("");
+  const [authPending, setAuthPending] = useState(false);
   const [portfolio, setPortfolio] = useState(initialPortfolio);
   const [githubUser, setGithubUser] = useState("vercel");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -175,6 +179,25 @@ export default function Home() {
     }
 
     loadProfiles().catch(() => setProfiles(fallbackProfiles));
+  }, []);
+
+  useEffect(() => {
+    async function restoreSession() {
+      const response = await fetch(apiPath("/api/session"), { cache: "no-store" });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.user) {
+        setSession(data.user);
+        window.localStorage.setItem("devmatch-session", JSON.stringify(data.user));
+      }
+    }
+
+    restoreSession().catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -231,11 +254,20 @@ export default function Home() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setAuthError("");
+    setAuthPending(true);
 
     const email = String(form.get("email") ?? "").trim().toLowerCase();
+    const password = String(form.get("password") ?? "");
 
     if (!email.includes("@")) {
       setAuthError("Informe um e-mail profissional valido.");
+      setAuthPending(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setAuthError("Use uma senha com pelo menos 8 caracteres.");
+      setAuthPending(false);
       return;
     }
 
@@ -244,21 +276,31 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          intent: authIntent,
           name: form.get("name"),
           email,
+          password,
           mode: authMode,
         }),
       });
 
       const data = await response.json();
       if (!response.ok) {
-        setAuthError(data.error);
+        setAuthError(data.error ?? "Nao foi possivel validar o acesso.");
+        setAuthPending(false);
         return;
       }
 
       setSession(data.user);
       window.localStorage.setItem("devmatch-session", JSON.stringify(data.user));
+      event.currentTarget.reset();
     } catch {
+      if (!apiBasePath) {
+        setAuthError("Backend indisponivel agora. Confira as variaveis da Vercel e tente novamente.");
+        setAuthPending(false);
+        return;
+      }
+
       const user = {
         email,
         name: normalizeDisplayName(form.get("name"), email),
@@ -266,7 +308,15 @@ export default function Home() {
       };
       setSession(user);
       window.localStorage.setItem("devmatch-session", JSON.stringify(user));
+    } finally {
+      setAuthPending(false);
     }
+  }
+
+  async function logout() {
+    setSession(null);
+    window.localStorage.removeItem("devmatch-session");
+    await fetch(apiPath("/api/session"), { method: "DELETE" }).catch(() => undefined);
   }
 
   function swipe(direction: "like" | "pass") {
@@ -468,8 +518,24 @@ export default function Home() {
               <div className="mt-8 grid gap-3 md:grid-cols-2">
                 <form className="compact-box space-y-2 scroll-mt-4" onSubmit={handleAuth} ref={accessRef}>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold">Acesso</span>
-                    <UserRoundPlus className="size-4" />
+                    <span className="text-sm font-bold">{authIntent === "signup" ? "Criar conta" : "Entrar"}</span>
+                    {session ? <ShieldCheck className="size-4" /> : <KeyRound className="size-4" />}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
+                    <button
+                      className={`rounded-md px-2 py-1.5 text-xs font-bold ${authIntent === "signup" ? "bg-[#111111] text-white" : ""}`}
+                      type="button"
+                      onClick={() => setAuthIntent("signup")}
+                    >
+                      Criar conta
+                    </button>
+                    <button
+                      className={`rounded-md px-2 py-1.5 text-xs font-bold ${authIntent === "signin" ? "bg-[#111111] text-white" : ""}`}
+                      type="button"
+                      onClick={() => setAuthIntent("signin")}
+                    >
+                      Entrar
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
                     <button
@@ -487,12 +553,24 @@ export default function Home() {
                       Dev
                     </button>
                   </div>
-                  <input className="light-field" name="name" placeholder="Nome" />
+                  {authIntent === "signup" ? <input className="light-field" name="name" placeholder="Nome" /> : null}
                   <input className="light-field" name="email" placeholder="email@empresa.com" type="email" />
-                  <button className="light-button" type="submit">
+                  <input className="light-field" name="password" placeholder="Senha" type="password" />
+                  <button className="light-button" disabled={authPending} type="submit">
                     <ShieldCheck className="size-4" />
-                    Entrar
+                    {authPending ? "Validando..." : authIntent === "signup" ? "Criar acesso" : "Entrar"}
                   </button>
+                  {session ? (
+                    <div className="flex items-center justify-between gap-3 rounded-lg bg-[#111111]/6 px-3 py-2">
+                      <span className="min-w-0 text-xs font-bold text-[#29251f]">
+                        <span className="block truncate">{session.name}</span>
+                        <span className="block truncate font-semibold text-[#6a6257]">{session.email}</span>
+                      </span>
+                      <button aria-label="Sair" className="rounded-md bg-white px-2 py-2" onClick={logout} type="button">
+                        <LogOut className="size-4" />
+                      </button>
+                    </div>
+                  ) : null}
                   {authError ? <p className="text-xs font-semibold text-red-700">{authError}</p> : null}
                 </form>
 

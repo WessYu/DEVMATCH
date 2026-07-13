@@ -5,20 +5,28 @@ import { cleanText } from "@/lib/request-guards";
 export const dynamic = "force-dynamic";
 
 const replies = [
-  "Legal. Tenho disponibilidade para uma call técnica esta semana.",
-  "Esse desafio parece bem alinhado com meu último projeto.",
-  "Posso mandar um recorte do código e explicar as decisões de arquitetura.",
-  "Curti a vaga. Como vocês medem sucesso nos primeiros 90 dias?",
+  "Legal. Tenho disponibilidade para uma call tecnica esta semana.",
+  "Esse desafio parece bem alinhado com meu ultimo projeto.",
+  "Posso mandar um recorte do codigo e explicar as decisoes de arquitetura.",
+  "Curti a vaga. Como voces medem sucesso nos primeiros 90 dias?",
 ];
 
 export async function POST(request: Request) {
-  const payload = await request.json();
+  const payload = await request.json().catch(() => null);
+
+  if (!payload) {
+    return NextResponse.json(
+      { error: "Payload invalido." },
+      { status: 400 },
+    );
+  }
+
   const message = cleanText(payload.message, 1000);
   const matchId = cleanText(payload.matchId, 80) || "default";
 
   if (!message) {
     return NextResponse.json(
-      { error: "Mensagem vazia não abre conversa boa." },
+      { error: "Mensagem vazia nao abre conversa boa." },
       { status: 400 },
     );
   }
