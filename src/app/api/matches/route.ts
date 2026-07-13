@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
   } catch {
     return NextResponse.json(
-      { error: "Nao foi possivel salvar o match agora." },
+      { error: "Não foi possível salvar o match agora." },
       { status: 503 },
     );
   }

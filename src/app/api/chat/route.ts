@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ messages: messages ?? [] });
   } catch {
     return NextResponse.json(
-      { error: "Nao foi possivel carregar a conversa agora." },
+      { error: "Não foi possível carregar a conversa agora." },
       { status: 503 },
     );
   }
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Nao foi possivel salvar a mensagem agora." },
+      { error: "Não foi possível salvar a mensagem agora." },
       { status: 503 },
     );
   }

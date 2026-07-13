@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
     if (existingUser?.passwordHash) {
       return NextResponse.json(
-        { error: "Conta ja existe. Entre com sua senha." },
+        { error: "Conta já existe. Entre com sua senha." },
         { status: 409 },
       );
     }
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
     return response;
   } catch {
     return NextResponse.json(
-      { error: "Nao foi possivel salvar o acesso agora." },
+      { error: "Não foi possível salvar o acesso agora." },
       { status: 503 },
     );
   }

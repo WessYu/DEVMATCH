@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BriefcaseBusiness, Code2, PanelTop } from "lucide-react";
+import { ArrowRight, BadgeCheck, BriefcaseBusiness, Code2, PanelTop, Search } from "lucide-react";
 import { ProductShell } from "@/components/ProductShell";
 import { DevMatchLogo } from "@/components/DevMatchLogo";
 import { fallbackProfiles } from "@/lib/client-utils";
 
 const featuredProfiles = fallbackProfiles.slice(0, 3);
+const previewFilters = ["React", "Next.js", "Sênior", "Remoto"];
 
 const workflow = [
   {
@@ -14,11 +15,11 @@ const workflow = [
   },
   {
     title: "Triagem objetiva",
-    text: "Stack, projeto, senioridade e aderencia ficam juntos.",
+    text: "Stack, projeto, senioridade e aderência ficam juntos.",
   },
   {
     title: "Conversa registrada",
-    text: "A conversa nasce do match e mantem o contexto.",
+    text: "A conversa nasce do match e mantém o contexto.",
   },
 ];
 
@@ -34,7 +35,7 @@ const rolePaths = [
   {
     href: "/dev",
     title: "Dev",
-    text: "Gerenciar portfolio, stack, GitHub e conversas abertas.",
+    text: "Gerenciar portfólio, stack, GitHub e conversas abertas.",
     action: "Abrir console",
     icon: Code2,
     primary: false,
@@ -42,6 +43,8 @@ const rolePaths = [
 ];
 
 export default function Home() {
+  const selectedProfile = featuredProfiles[0];
+
   return (
     <ProductShell>
       <section className="home-stage product-frame">
@@ -58,13 +61,13 @@ export default function Home() {
 
           <div className="mt-10 max-w-2xl">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#675f55]">
-              Plataforma de hiring para times tecnicos
+              Plataforma de hiring para times técnicos
             </p>
             <h1 className="mt-3 text-5xl font-black leading-[0.94] tracking-[-0.04em] text-[#111111] sm:text-6xl">
               Um pipeline limpo para avaliar devs com contexto.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-[#4a4640]">
-              DevMatch separa contratante e dev, organiza sinais tecnicos e leva o match para uma conversa objetiva.
+              DevMatch separa contratante e dev, organiza sinais técnicos e leva o match para uma conversa objetiva.
             </p>
           </div>
 
@@ -90,15 +93,15 @@ export default function Home() {
             })}
             <Link className="home-chat-shortcut" href="/feed">
               <PanelTop className="size-4" />
-              Ver feed de vagas e publicacoes
+              Ver feed de vagas e publicações
               <ArrowRight className="size-4" />
             </Link>
           </div>
 
-          <div className="mt-auto grid gap-2 pt-8 sm:grid-cols-3">
-            <HomeMetric label="triagem" value="5 devs" />
-            <HomeMetric label="fluxo" value="3 areas" />
-            <HomeMetric label="estado" value="online" />
+          <div className="mt-6 grid gap-2 sm:grid-cols-3">
+            <HomeMetric label="candidatos" value="5" />
+            <HomeMetric label="matches" value="2" />
+            <HomeMetric label="conversa ativa" value="1" />
           </div>
         </div>
 
@@ -106,7 +109,7 @@ export default function Home() {
           <div className="home-preview-toolbar">
             <span className="flex items-center gap-2 text-sm font-black text-white">
               <PanelTop className="size-4 text-cyan-200" />
-              Visao do workspace
+              Visão do workspace
             </span>
             <Link className="text-xs font-black text-cyan-100" href="/feed">
               Abrir feed
@@ -118,11 +121,23 @@ export default function Home() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Pipeline</p>
-                  <h2 className="mt-1 text-2xl font-black text-white">Shortlist tecnica</h2>
+                  <h2 className="mt-1 text-2xl font-black text-white">Shortlist técnica</h2>
                 </div>
                 <span className="rounded-full bg-cyan-300 px-3 py-1 text-xs font-black text-[#111111]">
                   pronto
                 </span>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                <div className="home-preview-search">
+                  <Search className="size-4 text-slate-500" />
+                  <span>Buscar candidato, stack ou projeto</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {previewFilters.map((filter) => (
+                    <span className="home-filter-chip" key={filter}>{filter}</span>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-5 grid gap-3">
@@ -145,12 +160,26 @@ export default function Home() {
               <div className="rounded-xl bg-[#f4f1eb] p-4 text-[#111111]">
                 <div className="flex items-center gap-2 text-sm font-black">
                   <BriefcaseBusiness className="size-4" />
-                  Requisicao ativa
+                  Requisição ativa
                 </div>
                 <p className="mt-3 text-sm leading-6 text-[#4a4640]">
-                  Front-end SaaS, React, Next.js, TypeScript e colaboracao remota.
+                  Front-end SaaS, React, Next.js, TypeScript e colaboração remota.
                 </p>
               </div>
+
+              {selectedProfile ? (
+                <div className="home-candidate-detail">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Candidato em foco</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <Image alt="" className="size-12 rounded-xl object-cover" height={48} src={selectedProfile.avatar} width={48} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black text-white">{selectedProfile.name}</span>
+                      <span className="block truncate text-xs text-cyan-100">{selectedProfile.role}</span>
+                    </span>
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-slate-400">{selectedProfile.compatibility.reasons[0]}.</p>
+                </div>
+              ) : null}
 
               <div className="space-y-2">
                 {workflow.map((item, index) => (
@@ -172,7 +201,7 @@ export default function Home() {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-black text-white">Feed da rede</span>
-                  <span className="block truncate text-xs text-slate-400">Vagas, posts, links e portfolio</span>
+                  <span className="block truncate text-xs text-slate-400">Vagas, posts, links e portfólio</span>
                 </span>
                 <BadgeCheck className="size-4 text-cyan-100" />
               </Link>

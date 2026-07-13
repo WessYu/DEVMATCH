@@ -337,7 +337,7 @@ button:disabled {
 
 .home-hero-panel {
   display: flex;
-  min-height: 580px;
+  min-height: 520px;
   flex-direction: column;
   border-radius: 0.7rem;
   background: #f3f1ec;
@@ -409,7 +409,7 @@ button:disabled {
 
 .home-product-preview {
   display: flex;
-  min-height: 580px;
+  min-height: 520px;
   flex-direction: column;
   border-radius: 0.7rem;
   background:
@@ -436,6 +436,41 @@ button:disabled {
 
 .home-preview-main,
 .home-preview-side {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 1rem;
+}
+
+.home-preview-search {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.62rem;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 0 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.home-filter-chip {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0 0.72rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #e2e8f0;
+}
+
+.home-candidate-detail {
   min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.7rem;

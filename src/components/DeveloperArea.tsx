@@ -32,9 +32,9 @@ const initialPortfolio: PortfolioState = {
   name: "Seu nome",
   role: "Front-end Engineer",
   location: "Brasil",
-  bio: "Conte o tipo de produto que voce constroi, como toma decisoes tecnicas e qual impacto ja entregou.",
+  bio: "Conte o tipo de produto que você constrói, como toma decisões técnicas e qual impacto já entregou.",
   skills: "React, Next.js, Node, TypeScript",
-  project: "Projeto principal com link, stack, problema resolvido e decisao tecnica relevante.",
+  project: "Projeto principal com link, stack, problema resolvido e decisão técnica relevante.",
   salary: "A combinar",
   availability: "30 dias",
 };
@@ -44,7 +44,7 @@ export function DeveloperArea() {
   const [portfolio, setPortfolio] = useState<PortfolioState>(() => readJsonStorage("devmatch-portfolio", initialPortfolio));
   const [githubUser, setGithubUser] = useState("vercel");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [githubStatus, setGithubStatus] = useState("Busque seu usuario para puxar repositorios recentes.");
+  const [githubStatus, setGithubStatus] = useState("Busque seu usuário para puxar repositórios recentes.");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -66,21 +66,21 @@ export function DeveloperArea() {
   }
 
   async function fetchGithub() {
-    setGithubStatus("Buscando repositorios...");
+    setGithubStatus("Buscando repositórios...");
 
     try {
       const response = await fetch(apiPath(`/api/github?user=${encodeURIComponent(githubUser)}`));
       const data = await response.json();
 
       if (!response.ok) {
-        setGithubStatus(data.error ?? "Nao consegui ler esse GitHub agora.");
+        setGithubStatus(data.error ?? "Não consegui ler esse GitHub agora.");
         return;
       }
 
       setRepos(data.repos);
-      setGithubStatus(`${data.repos.length} repositorios importados de @${data.username}.`);
+      setGithubStatus(`${data.repos.length} repositórios importados de @${data.username}.`);
     } catch {
-      setGithubStatus("GitHub indisponivel agora.");
+      setGithubStatus("GitHub indisponível agora.");
     }
   }
 
@@ -91,23 +91,23 @@ export function DeveloperArea() {
       mode="developer"
       onSessionChange={setSession}
       session={session}
-      title="Area do dev"
-      text="Esta tela mostra edicao de perfil, portfolio e GitHub. Ela fica disponivel apenas para contas de dev."
+      title="Área do dev"
+      text="Esta tela mostra edição de perfil, portfólio e GitHub. Ela fica disponível apenas para contas de dev."
     >
       <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
           <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Console do dev</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Perfil tecnico pronto para triagem.</h1>
+          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Perfil técnico pronto para triagem.</h1>
           <p className="mt-4 text-sm leading-6 text-[#4a4640]">
-            Mantenha bio, stack, projeto principal e repositorios organizados para conversas de contratacao.
+            Mantenha bio, stack, projeto principal e repositórios organizados para conversas de contratação.
           </p>
         </section>
         <AuthPanel defaultMode="developer" lockMode onSessionChange={setSession} session={session} />
         <DarkPanel title="Status publico" icon={<ShieldCheck className="size-5" />}>
           <div className="space-y-2 text-sm text-slate-300">
             <p>{session ? `Logado como ${session.name}` : "Entre ou crie uma conta dev."}</p>
-            <p>{saved ? "Perfil salvo neste navegador." : "Alteracoes sao salvas automaticamente e podem ser fixadas no botao salvar."}</p>
+            <p>{saved ? "Perfil salvo neste navegador." : "Alterações são salvas automaticamente e podem ser fixadas no botão salvar."}</p>
           </div>
         </DarkPanel>
       </aside>
@@ -158,7 +158,7 @@ export function DeveloperArea() {
       <div className="xl:col-span-2">
         <DarkPanel title="GitHub conectado" icon={<GitPullRequest className="size-5" />}>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input className="field" onChange={(event) => setGithubUser(event.target.value)} placeholder="usuario" value={githubUser} />
+            <input className="field" onChange={(event) => setGithubUser(event.target.value)} placeholder="usuário" value={githubUser} />
             <button className="icon-button sm:min-w-32" onClick={fetchGithub} type="button">
               <Search className="size-4" />
               Buscar

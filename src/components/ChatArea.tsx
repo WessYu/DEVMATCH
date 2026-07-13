@@ -186,7 +186,7 @@ export function ChatArea() {
               <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-xs font-bold text-slate-300">
                 <span className="rounded-full bg-cyan-300 px-2.5 py-1 text-[#111111]">{activeMatch.compatibility.score}% aderente</span>
                 <span>{activeMatch.role}</span>
-                <span className="text-slate-500">Historico do match</span>
+                <span className="text-slate-500">Histórico do match</span>
               </div>
               <div className="space-y-3">
                 {groupedChat.length ? (
@@ -218,7 +218,7 @@ export function ChatArea() {
           </>
         ) : (
           <div className="grid flex-1 place-items-center p-8 text-center">
-            <p className="text-sm text-slate-400">Ainda nao ha matches para conversar.</p>
+            <p className="text-sm text-slate-400">Ainda não há matches para conversar.</p>
           </div>
         )}
       </section>

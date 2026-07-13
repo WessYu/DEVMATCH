@@ -16,11 +16,17 @@ type SessionPayload = SessionUser & {
 const sevenDays = 1000 * 60 * 60 * 24 * 7;
 
 function secret() {
-  return (
-    process.env.AUTH_SECRET ||
-    process.env.DATABASE_URL ||
-    "devmatch-local-session-secret"
-  );
+  const authSecret = process.env.AUTH_SECRET?.trim();
+
+  if (authSecret) {
+    return authSecret;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET is required in production.");
+  }
+
+  return "devmatch-local-session-secret";
 }
 
 function sign(value: string) {

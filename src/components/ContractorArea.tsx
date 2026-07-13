@@ -108,19 +108,19 @@ export function ContractorArea() {
       mode="company"
       onSessionChange={setSession}
       session={session}
-      title="Area do contratante"
-      text="Esta tela mostra candidatos, filtros, matches e vaga ativa. Ela fica disponivel apenas para contas de contratante."
+      title="Área do contratante"
+      text="Esta tela mostra candidatos, filtros, matches e vaga ativa. Ela fica disponível apenas para contas de contratante."
     >
       <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
           <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Workspace do contratante</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Pipeline de avaliacao tecnica.</h1>
+          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Pipeline de avaliação técnica.</h1>
           <p className="mt-4 text-sm leading-6 text-[#4a4640]">
-            Revise candidatos por stack, evidencias de portfolio e status de match.
+            Revise candidatos por stack, evidências de portfólio e status de match.
           </p>
           <div className="mt-5 grid grid-cols-3 gap-2">
-            <Metric value={profiles.length} label="devs" />
+            <Metric value={profiles.length} label="candidatos" />
             <Metric value={matches.length} label="matches" />
             <Metric value={activeStack} label="filtro" />
           </div>
@@ -177,7 +177,7 @@ export function ContractorArea() {
                 <article className="candidate-card" key={developer.id}>
                   <div className="candidate-photo">
                     <Image alt={`Foto de ${developer.name}`} className="h-full w-full object-cover" height={720} src={developer.avatar} width={640} />
-                    <div className="absolute left-3 top-3 rounded-full bg-[#f4f1eb] px-3 py-1 text-xs font-black text-[#111111]">
+                      <div className="absolute left-3 top-3 rounded-full bg-[#f4f1eb] px-3 py-1 text-xs font-black text-[#111111]">
                       {developer.compatibility.score}% aderente
                     </div>
                   </div>

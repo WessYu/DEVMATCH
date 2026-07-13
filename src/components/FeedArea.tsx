@@ -103,7 +103,7 @@ export function FeedArea() {
     const localPost = makeLocalPost(form, session);
 
     if (!localPost.title || !localPost.body) {
-      setStatus("Preencha titulo e conteudo.");
+      setStatus("Preencha título e conteúdo.");
       return;
     }
 
@@ -142,7 +142,7 @@ export function FeedArea() {
       writeJsonStorage(storageKey, nextPosts);
       event.currentTarget.reset();
       setKind("post");
-      setStatus("Publicado neste navegador. O servidor sincroniza quando estiver disponivel.");
+      setStatus("Publicado neste navegador. O servidor sincroniza quando estiver disponível.");
     } finally {
       setPending(false);
     }
@@ -153,7 +153,7 @@ export function FeedArea() {
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
           <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Feed compartilhado</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Atualizacoes, vagas e portfolio no mesmo lugar.</h1>
+          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Atualizações, vagas e portfólio no mesmo lugar.</h1>
           <p className="mt-4 text-sm leading-6 text-[#4a4640]">
             Contratantes e devs enxergam o mesmo mural. Publique vaga, projeto, chamada para parceria, foto, link e tags.
           </p>
@@ -189,7 +189,7 @@ export function FeedArea() {
               </button>
             </div>
             <input name="kind" type="hidden" value={kind} />
-            <input className="field" maxLength={120} name="title" placeholder={kind === "job" ? "Titulo da vaga" : "Titulo da publicacao"} />
+            <input className="field" maxLength={120} name="title" placeholder={kind === "job" ? "Título da vaga" : "Título da publicação"} />
             <textarea className="field min-h-28 resize-none" maxLength={1400} name="body" placeholder={kind === "job" ? "Stack, modelo de trabalho, senioridade e contexto" : "Compartilhe projeto, aprendizado, disponibilidade ou pedido"} />
             <div className="grid gap-2 sm:grid-cols-2">
               <input className="field" name="imageUrl" placeholder="URL da foto" />
@@ -212,7 +212,7 @@ export function FeedArea() {
               <div>
                 <PanelTop className="mx-auto size-9 text-cyan-100" />
                 <p className="mt-3 text-sm font-bold text-white">Feed vazio por enquanto.</p>
-                <p className="mt-1 text-sm text-slate-400">Crie a primeira publicacao com uma conta de dev ou contratante.</p>
+                <p className="mt-1 text-sm text-slate-400">Crie a primeira publicação com uma conta de dev ou contratante.</p>
               </div>
             </div>
           )}

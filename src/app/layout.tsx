@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "DevMatch - Tinder de Dev + Portfolio Interativo",
   description:
-    "Plataforma de match entre empresas e desenvolvedores com swipe, portfolio vivo, GitHub e chat.",
+    "Plataforma de match entre empresas e desenvolvedores com swipe, portfólio vivo, GitHub e chat.",
 };
 
 export default function RootLayout({

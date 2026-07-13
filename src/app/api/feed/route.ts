@@ -49,7 +49,7 @@ export async function GET() {
     return NextResponse.json({ posts: posts ?? [] });
   } catch {
     return NextResponse.json(
-      { error: "Nao foi possivel carregar o feed agora." },
+      { error: "Não foi possível carregar o feed agora." },
       { status: 503 },
     );
   }
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
   if (!title || !body) {
     return NextResponse.json(
-      { error: "Titulo e conteudo sao obrigatorios." },
+      { error: "Título e conteúdo são obrigatórios." },
       { status: 400 },
     );
   }
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     );
   } catch {
     return NextResponse.json(
-      { error: "Nao foi possivel publicar agora." },
+      { error: "Não foi possível publicar agora." },
       { status: 503 },
     );
   }

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
   if (!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(username)) {
     return NextResponse.json(
-      { error: "Informe um usuario do GitHub." },
+      { error: "Informe um usuário do GitHub." },
       { status: 400 },
     );
   }
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 
   if (!response.ok) {
     return NextResponse.json(
-      { error: "Nao consegui ler esse GitHub agora." },
+      { error: "Não consegui ler esse GitHub agora." },
       { status: response.status },
     );
   }
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       name: repo.name,
       url: repo.html_url,
       description: repo.description ?? "Sem descricao publicada.",
-      language: repo.language ?? "Stack nao informada",
+      language: repo.language ?? "Stack não informada",
       stars: repo.stargazers_count,
       updatedAt: repo.updated_at,
     })),

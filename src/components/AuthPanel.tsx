@@ -33,7 +33,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
     setAuthPending(true);
 
     if (!email.includes("@")) {
-      setAuthError("Informe um e-mail profissional valido.");
+      setAuthError("Informe um e-mail profissional válido.");
       setAuthPending(false);
       return;
     }
@@ -59,7 +59,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       const data = await response.json();
 
       if (!response.ok) {
-        setAuthError(data.error ?? "Nao foi possivel validar o acesso.");
+        setAuthError(data.error ?? "Não foi possível validar o acesso.");
         setAuthPending(false);
         return;
       }
@@ -69,7 +69,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       event.currentTarget.reset();
     } catch {
       if (!apiBasePath) {
-        setAuthError("Backend indisponivel agora. Confira as variaveis da Vercel.");
+        setAuthError("Backend indisponível agora. Confira as variáveis da Vercel.");
         setAuthPending(false);
         return;
       }

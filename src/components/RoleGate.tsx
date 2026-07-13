@@ -19,13 +19,13 @@ const roleCopy = {
   company: {
     label: "contratante",
     oppositeHref: "/dev",
-    oppositeLabel: "Ir para area do dev",
+    oppositeLabel: "Ir para área do dev",
     icon: BriefcaseBusiness,
   },
   developer: {
     label: "dev",
     oppositeHref: "/contratante",
-    oppositeLabel: "Ir para area do contratante",
+    oppositeLabel: "Ir para área do contratante",
     icon: Code2,
   },
 };
@@ -94,15 +94,15 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
         <div className="mt-8 grid gap-2 rounded-xl bg-white/48 p-3">
           <div className="flex items-center gap-2 text-sm font-black text-[#111111]">
             <LockKeyhole className="size-4" />
-            Entre como {copy.label} para ver esta area.
+            Entre como {copy.label} para ver esta área.
           </div>
           {session ? (
             <p className="text-sm leading-6 text-[#4a4640]">
-              Sua sessao atual e de {session.mode === "company" ? "contratante" : "dev"}. Use a area correta ou saia para trocar o tipo de acesso.
+              Sua sessão atual é de {session.mode === "company" ? "contratante" : "dev"}. Use a área correta ou saia para trocar o tipo de acesso.
             </p>
           ) : (
             <p className="text-sm leading-6 text-[#4a4640]">
-              {checked ? "Nenhuma sessao valida encontrada." : "Verificando sessao..."}
+              {checked ? "Nenhuma sessão válida encontrada." : "Verificando sessão..."}
             </p>
           )}
         </div>
