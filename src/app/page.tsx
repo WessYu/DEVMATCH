@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BriefcaseBusiness, Code2, MessageCircle, PanelTop } from "lucide-react";
+import { ArrowRight, BadgeCheck, BriefcaseBusiness, Code2, PanelTop } from "lucide-react";
 import { ProductShell } from "@/components/ProductShell";
 import { DevMatchLogo } from "@/components/DevMatchLogo";
 import { fallbackProfiles } from "@/lib/client-utils";
@@ -88,9 +88,9 @@ export default function Home() {
                 </Link>
               );
             })}
-            <Link className="home-chat-shortcut" href="/chat">
-              <MessageCircle className="size-4" />
-              Tenho uma conversa em andamento
+            <Link className="home-chat-shortcut" href="/feed">
+              <PanelTop className="size-4" />
+              Ver feed de vagas e publicacoes
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -108,8 +108,8 @@ export default function Home() {
               <PanelTop className="size-4 text-cyan-200" />
               Visao do workspace
             </span>
-            <Link className="text-xs font-black text-cyan-100" href="/chat">
-              Abrir inbox
+            <Link className="text-xs font-black text-cyan-100" href="/feed">
+              Abrir feed
             </Link>
           </div>
 
@@ -166,13 +166,13 @@ export default function Home() {
                 ))}
               </div>
 
-              <Link className="home-chat-card" href="/chat">
+              <Link className="home-chat-card" href="/feed">
                 <span className="grid size-10 place-items-center rounded-lg bg-cyan-300 text-[#111111]">
-                  <MessageCircle className="size-4" />
+                  <PanelTop className="size-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-black text-white">Inbox de matches</span>
-                  <span className="block truncate text-xs text-slate-400">Mensagens com contexto tecnico</span>
+                  <span className="block text-sm font-black text-white">Feed da rede</span>
+                  <span className="block truncate text-xs text-slate-400">Vagas, posts, links e portfolio</span>
                 </span>
                 <BadgeCheck className="size-4 text-cyan-100" />
               </Link>

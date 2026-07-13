@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -13,8 +13,25 @@ const starterMatches: Match[] = fallbackProfiles.slice(0, 2).map((developer) => 
   role: developer.role,
   avatar: developer.avatar,
   compatibility: developer.compatibility,
-  suggestedOpening: `Oi ${developer.name.split(" ")[0]}, vi seu projeto ${developer.projects[0].name}. Vamos conversar?`,
 }));
+
+function messageKey(message: ChatMessage) {
+  return `${message.author}|${message.createdAt}|${message.text}`;
+}
+
+function mergeMessages(localMessages: ChatMessage[], remoteMessages: ChatMessage[]) {
+  const seen = new Set<string>();
+  return [...remoteMessages, ...localMessages]
+    .filter((message) => {
+      const key = messageKey(message);
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
 
 export function ChatArea() {
   const searchParams = useSearchParams();
@@ -32,6 +49,51 @@ export function ChatArea() {
   const activeChat = activeMatch ? chatByMatch[activeMatch.id] ?? [] : [];
   const groupedChat = activeChat.slice(-40);
 
+  function persistChat(matchId: string, messages: ChatMessage[]) {
+    const nextState = {
+      ...chatByMatch,
+      [matchId]: messages,
+    };
+
+    setChatByMatch(nextState);
+    writeJsonStorage("devmatch-chat", nextState);
+  }
+
+  useEffect(() => {
+    if (!activeMatchId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadMessages() {
+      const response = await fetch(apiPath(`/api/chat?matchId=${encodeURIComponent(activeMatchId)}`), {
+        cache: "no-store",
+      });
+      const data = await response.json();
+
+      if (!response.ok || !Array.isArray(data.messages) || cancelled) {
+        return;
+      }
+
+      setChatByMatch((current) => {
+        const merged = mergeMessages(current[activeMatchId] ?? [], data.messages);
+        const nextState = {
+          ...current,
+          [activeMatchId]: merged,
+        };
+        writeJsonStorage("devmatch-chat", nextState);
+        return nextState;
+      });
+    }
+
+    loadMessages().catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMatchId]);
+
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -44,42 +106,32 @@ export function ChatArea() {
       text: draft.trim(),
       createdAt: new Date().toISOString(),
     };
-    const nextState = {
-      ...chatByMatch,
-      [activeMatch.id]: [...activeChat, message],
-    };
+    const optimisticMessages = [...activeChat, message];
 
-    setChatByMatch(nextState);
-    writeJsonStorage("devmatch-chat", nextState);
+    persistChat(activeMatch.id, optimisticMessages);
     setDraft("");
 
-    if (sender === "company") {
-      try {
-        const response = await fetch(apiPath("/api/chat"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ matchId: activeMatch.id, message: message.text }),
-        });
-        const data = await response.json();
+    try {
+      const response = await fetch(apiPath("/api/chat"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          author: sender,
+          matchId: activeMatch.id,
+          message: message.text,
+        }),
+      });
+      const data = await response.json();
 
-        if (!response.ok) {
-          return;
-        }
-
-        const reply: ChatMessage = {
-          author: "developer",
-          text: data.reply,
-          createdAt: data.createdAt,
-        };
-        const stateWithReply = {
-          ...nextState,
-          [activeMatch.id]: [...nextState[activeMatch.id], reply],
-        };
-        setChatByMatch(stateWithReply);
-        writeJsonStorage("devmatch-chat", stateWithReply);
-      } catch {
-        // The local message is already saved; the backend can catch up later.
+      if (response.ok && data.message) {
+        const savedMessage = data.message as ChatMessage;
+        persistChat(
+          activeMatch.id,
+          optimisticMessages.map((item) => (item.createdAt === message.createdAt ? savedMessage : item)),
+        );
       }
+    } catch {
+      // The local message remains available if the network is offline.
     }
   }
 
@@ -131,7 +183,11 @@ export function ChatArea() {
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
-              <p className="mb-4 rounded-xl bg-cyan-300/10 p-3 text-sm leading-6 text-cyan-50">{activeMatch.suggestedOpening}</p>
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-xs font-bold text-slate-300">
+                <span className="rounded-full bg-cyan-300 px-2.5 py-1 text-[#111111]">{activeMatch.compatibility.score}% aderente</span>
+                <span>{activeMatch.role}</span>
+                <span className="text-slate-500">Historico do match</span>
+              </div>
               <div className="space-y-3">
                 {groupedChat.length ? (
                   groupedChat.map((message, index) => (
@@ -146,7 +202,7 @@ export function ChatArea() {
                   <div className="grid min-h-72 place-items-center text-center">
                     <div>
                       <MessageCircle className="mx-auto size-8 text-cyan-100" />
-                      <p className="mt-3 text-sm text-slate-400">Envie a primeira mensagem com contexto do match.</p>
+                      <p className="mt-3 text-sm text-slate-400">Nenhuma mensagem enviada ainda.</p>
                     </div>
                   </div>
                 )}

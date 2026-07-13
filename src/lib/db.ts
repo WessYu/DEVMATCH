@@ -41,8 +41,54 @@ type DbUserRow = {
   password_hash: string | null;
 };
 
+type DbMessageRow = {
+  author: "company" | "developer";
+  body: string;
+  created_at: string;
+};
+
+export type FeedPostRecord = {
+  id: string;
+  authorEmail: string;
+  authorName: string;
+  authorMode: "company" | "developer";
+  kind: "post" | "job";
+  title: string;
+  body: string;
+  imageUrl: string;
+  linkUrl: string;
+  tags: string[];
+  createdAt: string;
+};
+
+type DbFeedPostRow = {
+  id: string;
+  author_email: string;
+  author_name: string;
+  author_mode: "company" | "developer";
+  kind: "post" | "job";
+  title: string;
+  body: string;
+  image_url: string | null;
+  link_url: string | null;
+  tags: string[];
+  created_at: string;
+};
+
+type LocalMessageRecord = {
+  id: number;
+  matchKey: string;
+  author: "company" | "developer";
+  text: string;
+  createdAt: string;
+};
+
 let sqlClient: NeonQueryFunction<false, false> | null = null;
 let schemaReady: Promise<void> | null = null;
+let localMessageId = 0;
+let localFeedPostId = 0;
+const localMessages: LocalMessageRecord[] = [];
+const localFeedPosts: FeedPostRecord[] = [];
 
 export function hasDatabase() {
   return Boolean(process.env.DATABASE_URL) && process.env.NEXT_OUTPUT_EXPORT !== "true";
@@ -118,6 +164,22 @@ export async function ensureSchema() {
           match_key text not null,
           author text not null check (author in ('company', 'developer')),
           body text not null,
+          created_at timestamptz not null default now()
+        )
+      `;
+
+      await sql`
+        create table if not exists devmatch_feed_posts (
+          id bigserial primary key,
+          author_email text not null,
+          author_name text not null,
+          author_mode text not null check (author_mode in ('company', 'developer')),
+          kind text not null check (kind in ('post', 'job')),
+          title text not null,
+          body text not null,
+          image_url text,
+          link_url text,
+          tags jsonb not null default '[]'::jsonb,
           created_at timestamptz not null default now()
         )
       `;
@@ -342,7 +404,6 @@ export async function saveMatchesToDatabase({
       },
       companyProfile,
     ),
-    suggestedOpening: `Oi ${developer.name.split(" ")[0]}, vi o projeto ${developer.projects[0]?.name ?? "principal"}. Faz sentido conversar sobre ${companyProfile.role}?`,
   }));
 }
 
@@ -358,12 +419,173 @@ export async function saveMessageToDatabase({
   const sql = getSql();
 
   if (!sql) {
-    return;
+    const message = {
+      id: ++localMessageId,
+      matchKey,
+      author,
+      text: body,
+      createdAt: new Date().toISOString(),
+    };
+
+    localMessages.push(message);
+
+    return {
+      author: message.author,
+      text: message.text,
+      createdAt: message.createdAt,
+    };
   }
 
   await ensureSchema();
-  await sql`
+  const rows = await sql`
     insert into devmatch_messages (match_key, author, body)
     values (${matchKey}, ${author}, ${body})
-  `;
+    returning author, body, created_at
+  ` as DbMessageRow[];
+
+  const message = rows[0];
+
+  if (!message) {
+    return null;
+  }
+
+  return {
+    author: message.author,
+    text: message.body,
+    createdAt: message.created_at,
+  };
+}
+
+export async function getMessagesFromDatabase(matchKey: string) {
+  const sql = getSql();
+
+  if (!sql) {
+    return localMessages
+      .filter((message) => message.matchKey === matchKey)
+      .sort((a, b) => a.id - b.id)
+      .slice(-200)
+      .map((message) => ({
+        author: message.author,
+        text: message.text,
+        createdAt: message.createdAt,
+      }));
+  }
+
+  await ensureSchema();
+  const rows = await sql`
+    select author, body, created_at
+    from devmatch_messages
+    where match_key = ${matchKey}
+    order by created_at asc, id asc
+    limit 200
+  ` as DbMessageRow[];
+
+  return rows.map((message) => ({
+    author: message.author,
+    text: message.body,
+    createdAt: message.created_at,
+  }));
+}
+
+function mapFeedPost(post: DbFeedPostRow): FeedPostRecord {
+  return {
+    id: post.id,
+    authorEmail: post.author_email,
+    authorName: post.author_name,
+    authorMode: post.author_mode,
+    kind: post.kind,
+    title: post.title,
+    body: post.body,
+    imageUrl: post.image_url ?? "",
+    linkUrl: post.link_url ?? "",
+    tags: Array.isArray(post.tags) ? post.tags : [],
+    createdAt: post.created_at,
+  };
+}
+
+export async function getFeedPostsFromDatabase() {
+  const sql = getSql();
+
+  if (!sql) {
+    return [...localFeedPosts]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 80);
+  }
+
+  await ensureSchema();
+  const rows = await sql`
+    select
+      id::text,
+      author_email,
+      author_name,
+      author_mode,
+      kind,
+      title,
+      body,
+      image_url,
+      link_url,
+      tags,
+      created_at
+    from devmatch_feed_posts
+    order by created_at desc, id desc
+    limit 80
+  ` as DbFeedPostRow[];
+
+  return rows.map(mapFeedPost);
+}
+
+export async function saveFeedPostToDatabase(post: Omit<FeedPostRecord, "id" | "createdAt">) {
+  const sql = getSql();
+
+  if (!sql) {
+    const savedPost = {
+      id: `local-${++localFeedPostId}`,
+      ...post,
+      createdAt: new Date().toISOString(),
+    };
+
+    localFeedPosts.unshift(savedPost);
+
+    return savedPost;
+  }
+
+  await ensureSchema();
+  const rows = await sql`
+    insert into devmatch_feed_posts (
+      author_email,
+      author_name,
+      author_mode,
+      kind,
+      title,
+      body,
+      image_url,
+      link_url,
+      tags
+    )
+    values (
+      ${post.authorEmail},
+      ${post.authorName},
+      ${post.authorMode},
+      ${post.kind},
+      ${post.title},
+      ${post.body},
+      ${post.imageUrl || null},
+      ${post.linkUrl || null},
+      ${JSON.stringify(post.tags)}::jsonb
+    )
+    returning
+      id::text,
+      author_email,
+      author_name,
+      author_mode,
+      kind,
+      title,
+      body,
+      image_url,
+      link_url,
+      tags,
+      created_at
+  ` as DbFeedPostRow[];
+
+  return rows[0] ? mapFeedPost(rows[0]) : null;
 }

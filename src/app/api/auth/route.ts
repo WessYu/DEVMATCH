@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSessionValue, hashPassword, SESSION_COOKIE, verifyPassword } from "@/lib/auth";
+import { createSessionValue, hashPassword, SESSION_COOKIE, verifyPassword, type SessionUser } from "@/lib/auth";
 import { findUserByEmail, hasDatabase, saveUserWithPassword } from "@/lib/db";
 import { cleanEmail, cleanText } from "@/lib/request-guards";
 
@@ -45,17 +45,17 @@ export async function POST(request: Request) {
     const existingUser = hasDatabase() ? await findUserByEmail(email) : localUsers.get(email) ?? null;
 
     if (intent === "signin") {
-      if (!existingUser || !verifyPassword(password, existingUser.passwordHash)) {
+      if (!existingUser || !verifyPassword(password, existingUser.passwordHash ?? null)) {
         return NextResponse.json(
           { error: "E-mail ou senha incorretos." },
           { status: 401 },
         );
       }
 
-      const user = {
-        email: existingUser.email,
-        name: existingUser.name,
-        mode: existingUser.mode,
+      const user: SessionUser = {
+        email: existingUser.email ?? email,
+        name: existingUser.name ?? displayName,
+        mode: existingUser.mode === "developer" ? "developer" : "company",
       };
 
       const response = NextResponse.json({ user });

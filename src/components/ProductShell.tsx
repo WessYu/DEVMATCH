@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BriefcaseBusiness, Code2, MessageCircle } from "lucide-react";
+import { BriefcaseBusiness, Code2, MessageCircle, PanelTop } from "lucide-react";
 import { DevMatchLogo } from "@/components/DevMatchLogo";
 
 const navItems = [
+  { href: "/feed", label: "Feed", icon: PanelTop },
   { href: "/contratante", label: "Contratante", icon: BriefcaseBusiness },
   { href: "/dev", label: "Dev", icon: Code2 },
   { href: "/chat", label: "Chat", icon: MessageCircle },
@@ -38,8 +39,8 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <Link className="nav-cta hidden sm:inline-flex sm:items-center" href="/chat">
-            Abrir inbox
+          <Link className="nav-cta hidden sm:inline-flex sm:items-center" href="/feed">
+            Abrir feed
           </Link>
         </header>
 

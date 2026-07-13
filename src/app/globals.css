@@ -570,6 +570,43 @@ button:disabled {
   color: #f8fafc;
 }
 
+.feed-composer,
+.feed-card {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.feed-composer {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.75rem;
+}
+
+.feed-card {
+  padding: clamp(0.95rem, 2vw, 1.25rem);
+}
+
+.feed-kind {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  padding: 0 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 950;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.feed-kind.is-job {
+  background: #67e8f9;
+  color: #111111;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }

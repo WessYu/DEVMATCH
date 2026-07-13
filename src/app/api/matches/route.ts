@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       role: developer.role,
       avatar: developer.avatar,
       compatibility: scoreDeveloper(developer, companyProfile),
-      suggestedOpening: `Oi ${developer.name.split(" ")[0]}, curti seu trabalho em ${developer.projects[0].name}. Vamos conversar sobre ${companyProfile.role}?`,
     }));
 
   return NextResponse.json({ matches });

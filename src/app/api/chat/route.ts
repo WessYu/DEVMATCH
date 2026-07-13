@@ -1,15 +1,32 @@
 import { NextResponse } from "next/server";
-import { saveMessageToDatabase } from "@/lib/db";
+import { getMessagesFromDatabase, saveMessageToDatabase } from "@/lib/db";
 import { cleanText } from "@/lib/request-guards";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-const replies = [
-  "Legal. Tenho disponibilidade para uma call tecnica esta semana.",
-  "Esse desafio parece bem alinhado com meu ultimo projeto.",
-  "Posso mandar um recorte do codigo e explicar as decisoes de arquitetura.",
-  "Curti a vaga. Como voces medem sucesso nos primeiros 90 dias?",
-];
+function cleanAuthor(value: unknown): "company" | "developer" {
+  return value === "developer" ? "developer" : "company";
+}
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const matchId = cleanText(url.searchParams.get("matchId"), 80);
+
+  if (!matchId) {
+    return NextResponse.json({ messages: [] });
+  }
+
+  try {
+    const messages = await getMessagesFromDatabase(matchId);
+    return NextResponse.json({ messages: messages ?? [] });
+  } catch {
+    return NextResponse.json(
+      { error: "Nao foi possivel carregar a conversa agora." },
+      { status: 503 },
+    );
+  }
+}
 
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
@@ -22,28 +39,36 @@ export async function POST(request: Request) {
   }
 
   const message = cleanText(payload.message, 1000);
-  const matchId = cleanText(payload.matchId, 80) || "default";
+  const matchId = cleanText(payload.matchId, 80);
+  const author = cleanAuthor(payload.author);
 
-  if (!message) {
+  if (!matchId) {
     return NextResponse.json(
-      { error: "Mensagem vazia nao abre conversa boa." },
+      { error: "Conversa sem match." },
       { status: 400 },
     );
   }
 
-  const reply = replies[Math.floor(Math.random() * replies.length)];
-  const createdAt = new Date().toISOString();
+  if (!message) {
+    return NextResponse.json(
+      { error: "Mensagem vazia." },
+      { status: 400 },
+    );
+  }
 
   try {
-    await saveMessageToDatabase({
-      author: "company",
+    const savedMessage = await saveMessageToDatabase({
+      author,
       body: message,
       matchKey: matchId,
     });
-    await saveMessageToDatabase({
-      author: "developer",
-      body: reply,
-      matchKey: matchId,
+
+    return NextResponse.json({
+      message: savedMessage ?? {
+        author,
+        text: message,
+        createdAt: new Date().toISOString(),
+      },
     });
   } catch {
     return NextResponse.json(
@@ -51,9 +76,4 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
-
-  return NextResponse.json({
-    reply,
-    createdAt,
-  });
 }

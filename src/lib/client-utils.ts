@@ -24,12 +24,25 @@ export type Match = {
   role: string;
   avatar: string;
   compatibility: Compatibility;
-  suggestedOpening: string;
 };
 
 export type ChatMessage = {
   author: "company" | "developer";
   text: string;
+  createdAt: string;
+};
+
+export type FeedPost = {
+  id: string;
+  authorEmail: string;
+  authorName: string;
+  authorMode: "company" | "developer";
+  kind: "post" | "job";
+  title: string;
+  body: string;
+  imageUrl: string;
+  linkUrl: string;
+  tags: string[];
   createdAt: string;
 };
 
@@ -49,7 +62,6 @@ export function buildMatches(ids: string[], profiles: EnrichedDeveloper[]) {
       role: developer.role,
       avatar: developer.avatar,
       compatibility: scoreDeveloper(developer, companyProfile),
-      suggestedOpening: `Oi ${developer.name.split(" ")[0]}, vi o projeto ${developer.projects[0].name}. Faz sentido conversar sobre ${companyProfile.role}?`,
     }));
 }
 
