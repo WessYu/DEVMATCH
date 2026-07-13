@@ -1,73 +1,243 @@
+<div align="center">
+
 # DevMatch
 
-DevMatch e uma plataforma de recrutamento tecnico com perfis de desenvolvedores, portfolio, projetos, filtros por stack, matches e conversa inicial.
+### Recrutamento técnico com contexto
+
+Plataforma SaaS full-stack que conecta empresas e desenvolvedores por meio de perfis técnicos, portfólios, projetos, compatibilidade, matches, feed e conversas persistidas.
+
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Neon-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+
+</div>
+
+---
+
+## Sobre o produto
+
+O DevMatch foi criado para tornar a avaliação de profissionais de tecnologia mais objetiva.
+
+Em vez de limitar o processo a currículos e descrições genéricas, a plataforma reúne informações relevantes em um único workspace: stack, senioridade, projetos, GitHub, sinais técnicos, disponibilidade e compatibilidade com a vaga.
+
+O objetivo é transformar a triagem em um fluxo claro:
+
+```text
+Descoberta → Avaliação → Match → Conversa
+```
+
+---
+
+## Experiências por tipo de conta
+
+| Contratante | Desenvolvedor |
+|---|---|
+| Analisa candidatos e evidências técnicas | Cria e edita o próprio perfil profissional |
+| Filtra profissionais por stack | Apresenta stack, projetos e disponibilidade |
+| Visualiza compatibilidade com a vaga | Conecta e exibe repositórios do GitHub |
+| Salva matches e monta uma shortlist | Participa do feed da comunidade |
+| Inicia conversas com contexto | Acompanha matches e conversas |
+
+---
+
+## Principais funcionalidades
+
+- Autenticação para empresas e desenvolvedores
+- Workspaces separados por tipo de conta
+- Perfis técnicos com stack, senioridade, localização e disponibilidade
+- Portfólio com projetos e evidências de entrega
+- Leitura de repositórios públicos do GitHub
+- Filtros por tecnologia e critérios técnicos
+- Pontuação de compatibilidade entre vaga e candidato
+- Criação e persistência de matches
+- Chat manual associado ao match
+- Feed com publicações, vagas, links, imagens e tags
+- Persistência de usuários, perfis, matches, mensagens e posts
+- Interface responsiva com identidade visual própria
+- Versão estática para GitHub Pages e versão full-stack para Vercel
+
+---
 
 ## Stack
 
-- Next.js App Router
-- React
+### Front-end
+
+- Next.js 16 com App Router
+- React 19
 - TypeScript
-- Tailwind CSS
+- Tailwind CSS 4
 - GSAP
-- Route Handlers
-- Neon PostgreSQL no Vercel
+- Lucide React
 
-## Funcionalidades
+### Back-end
 
-- Acesso para empresa ou dev
-- Deck interativo de candidatos
-- Filtro por stack
-- Perfil editavel
-- Matches
-- Chat inicial
-- Leitura de repositorios do GitHub
-- Persistencia em Neon quando `DATABASE_URL` esta configurada
+- Next.js Route Handlers
+- Neon Serverless PostgreSQL
+- Cookies de sessão HTTP-only
+- Hash de senhas com `scrypt`
+- Validação e sanitização de payloads
 
-## Variaveis de ambiente
+### Infraestrutura
 
-Crie `DATABASE_URL` no Vercel com a connection string do Neon.
+- Vercel para a aplicação full-stack
+- Neon para persistência PostgreSQL
+- GitHub Pages para a demonstração estática
 
-Nunca commite `.env.local` ou qualquer connection string real. Use apenas `.env.example` como modelo.
+---
 
-## Banco
+## Arquitetura
 
-No primeiro request com `DATABASE_URL` disponivel, o backend cria:
+```text
+src/
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   ├── chat/
+│   │   ├── feed/
+│   │   ├── github/
+│   │   ├── matches/
+│   │   └── profiles/
+│   ├── chat/
+│   ├── contratante/
+│   ├── dev/
+│   └── feed/
+├── components/
+└── lib/
+    ├── auth.ts
+    ├── db.ts
+    ├── devmatch-data.ts
+    └── request-guards.ts
+```
 
-- `devmatch_users`
-- `devmatch_profiles`
-- `devmatch_matches`
-- `devmatch_messages`
+A aplicação utiliza dados locais como fallback durante o desenvolvimento. Quando `DATABASE_URL` está configurada, os dados são armazenados no Neon PostgreSQL.
 
-Os perfis iniciais tambem sao sincronizados no banco.
+---
 
-## Rodar localmente
+## Banco de dados
+
+O schema é preparado automaticamente no primeiro acesso ao backend.
+
+| Tabela | Responsabilidade |
+|---|---|
+| `devmatch_users` | Contas, tipo de usuário e senha protegida |
+| `devmatch_profiles` | Perfis técnicos dos desenvolvedores |
+| `devmatch_matches` | Conexões entre empresas e candidatos |
+| `devmatch_messages` | Mensagens associadas a cada match |
+| `devmatch_feed_posts` | Vagas e publicações do feed |
+
+---
+
+## Rotas da API
+
+| Método | Rota | Função |
+|---|---|---|
+| `POST` | `/api/auth` | Cadastro e login |
+| `GET` | `/api/profiles` | Listagem de perfis técnicos |
+| `POST` | `/api/matches` | Criação de matches |
+| `GET` | `/api/chat?matchId=...` | Carregamento de mensagens |
+| `POST` | `/api/chat` | Envio de mensagem |
+| `GET` | `/api/feed` | Listagem de publicações e vagas |
+| `POST` | `/api/feed` | Criação de uma publicação |
+| `GET` | `/api/github?user=...` | Leitura de repositórios públicos |
+
+---
+
+## Executando localmente
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/WessYu/DEVMATCH.git
+cd DEVMATCH
+```
+
+### 2. Instale as dependências
 
 ```bash
 npm install
+```
+
+### 3. Configure as variáveis de ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto:
+
+```env
+DATABASE_URL="sua_connection_string_do_neon"
+AUTH_SECRET="um_valor_longo_unico_e_seguro"
+```
+
+`AUTH_SECRET` é obrigatório em produção. Nunca publique `.env.local`, credenciais ou connection strings reais.
+
+### 4. Inicie o ambiente de desenvolvimento
+
+```bash
 npm run dev
 ```
 
-Abra `http://localhost:3000`.
+A aplicação ficará disponível em:
 
-## Validar
-
-```bash
-npm run lint
-npm run build
+```text
+http://localhost:3000
 ```
 
-## GitHub Pages
+---
 
-GitHub Pages publica somente a versao estatica. Backend real roda no Vercel.
+## Scripts
 
 ```bash
-npm run build:pages
+npm run dev          # inicia o ambiente de desenvolvimento
+npm run build        # gera o build de produção
+npm run start        # inicia o build de produção
+npm run lint         # executa o ESLint
+npm run build:pages  # gera a versão estática do GitHub Pages
 ```
 
-## Rotas
+---
 
-- `GET /api/profiles`
-- `POST /api/auth`
-- `POST /api/matches`
-- `POST /api/chat`
-- `GET /api/github?user=vercel`
+## Deploy
+
+### Vercel
+
+A versão publicada na Vercel utiliza os Route Handlers, autenticação, chat, feed e persistência no Neon.
+
+Variáveis necessárias:
+
+```env
+DATABASE_URL="..."
+AUTH_SECRET="..."
+```
+
+### GitHub Pages
+
+O GitHub Pages publica apenas a versão estática da interface. Recursos que dependem do backend devem ser demonstrados na versão hospedada na Vercel.
+
+---
+
+## Próximas evoluções
+
+- Autorização granular para proteger feed, matches e conversas
+- Upload real de imagens e avatares
+- Notificações de novos matches e mensagens
+- Busca avançada e filtros combinados
+- Status de candidatura e etapas do pipeline
+- Perfil público compartilhável
+- Testes automatizados de interface e API
+- Painel administrativo e moderação
+
+---
+
+## Objetivo do projeto
+
+O DevMatch demonstra a construção de um produto full-stack completo, cobrindo interface, experiência do usuário, regras de negócio, autenticação, integração com API externa, banco de dados e deploy.
+
+Mais do que uma landing page, o projeto foi pensado como uma plataforma operacional de recrutamento técnico.
+
+---
+
+## Autor
+
+Desenvolvido por **Wesley Cruz (Wess)**.
+
+[GitHub](https://github.com/WessYu)
