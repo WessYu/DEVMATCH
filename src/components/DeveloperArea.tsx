@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GitPullRequest, MessageCircle, Save, Search, ShieldCheck } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { DarkPanel } from "@/components/DarkPanel";
+import { RoleGate } from "@/components/RoleGate";
 import { apiPath, readJsonStorage, writeJsonStorage, type UserSession } from "@/lib/client-utils";
 
 type PortfolioState = {
@@ -86,7 +87,14 @@ export function DeveloperArea() {
   const skills = portfolio.skills.split(",").map((skill) => skill.trim()).filter(Boolean);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
+    <RoleGate
+      mode="developer"
+      onSessionChange={setSession}
+      session={session}
+      title="Area do dev"
+      text="Esta tela mostra edicao de perfil, portfolio e GitHub. Ela fica disponivel apenas para contas de dev."
+    >
+      <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
           <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Area do dev</p>
@@ -95,7 +103,7 @@ export function DeveloperArea() {
             Organize bio, stack, projeto principal e repositorios para chegar no chat com contexto.
           </p>
         </section>
-        <AuthPanel defaultMode="developer" onSessionChange={setSession} session={session} />
+        <AuthPanel defaultMode="developer" lockMode onSessionChange={setSession} session={session} />
         <DarkPanel title="Status publico" icon={<ShieldCheck className="size-5" />}>
           <div className="space-y-2 text-sm text-slate-300">
             <p>{session ? `Logado como ${session.name}` : "Entre ou crie uma conta dev."}</p>
@@ -170,6 +178,7 @@ export function DeveloperArea() {
           </div>
         </DarkPanel>
       </div>
-    </div>
+      </div>
+    </RoleGate>
   );
 }

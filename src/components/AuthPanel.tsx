@@ -12,11 +12,12 @@ import {
 
 type AuthPanelProps = {
   defaultMode: "company" | "developer";
+  lockMode?: boolean;
   session: UserSession | null;
   onSessionChange: (session: UserSession | null) => void;
 };
 
-export function AuthPanel({ defaultMode, onSessionChange, session }: AuthPanelProps) {
+export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, session }: AuthPanelProps) {
   const [authMode, setAuthMode] = useState<"company" | "developer">(defaultMode);
   const [authIntent, setAuthIntent] = useState<"signup" | "signin">("signup");
   const [authError, setAuthError] = useState("");
@@ -105,14 +106,20 @@ export function AuthPanel({ defaultMode, onSessionChange, session }: AuthPanelPr
           Entrar
         </button>
       </div>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
-        <button className={`segmented-button ${authMode === "company" ? "is-active" : ""}`} onClick={() => setAuthMode("company")} type="button">
-          Empresa
-        </button>
-        <button className={`segmented-button ${authMode === "developer" ? "is-active" : ""}`} onClick={() => setAuthMode("developer")} type="button">
-          Dev
-        </button>
-      </div>
+      {lockMode ? (
+        <div className="rounded-lg bg-[#111111]/6 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#4a4640]">
+          {defaultMode === "company" ? "Acesso de contratante" : "Acesso de dev"}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
+          <button className={`segmented-button ${authMode === "company" ? "is-active" : ""}`} onClick={() => setAuthMode("company")} type="button">
+            Empresa
+          </button>
+          <button className={`segmented-button ${authMode === "developer" ? "is-active" : ""}`} onClick={() => setAuthMode("developer")} type="button">
+            Dev
+          </button>
+        </div>
+      )}
       {authIntent === "signup" ? <input className="light-field" name="name" placeholder="Nome" /> : null}
       <input className="light-field" name="email" placeholder={authMode === "company" ? "email@empresa.com" : "email@dev.com"} type="email" />
       <input className="light-field" name="password" placeholder="Senha" type="password" />

@@ -477,6 +477,32 @@ button:disabled {
   gap: 0.75rem;
 }
 
+.role-gate {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.role-gate-copy {
+  min-height: 520px;
+  border-radius: 0.9rem;
+  background: #f4f1eb;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  color: #111111;
+}
+
+.role-gate-panel {
+  display: flex;
+  min-height: 520px;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
+    #17191c;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
 .deck-scroll {
   display: grid;
   grid-auto-columns: minmax(300px, 390px);
@@ -599,6 +625,11 @@ button:disabled {
   .home-role-action {
     width: 100%;
   }
+
+  .role-gate-copy,
+  .role-gate-panel {
+    min-height: auto;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -608,5 +639,9 @@ button:disabled {
 
   .home-preview-grid {
     grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .role-gate {
+    grid-template-columns: minmax(0, 1fr) 380px;
   }
 }

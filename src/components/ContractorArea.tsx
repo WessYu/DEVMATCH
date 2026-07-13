@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { BadgeCheck, BriefcaseBusiness, Heart, MessageCircle, X } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { DarkPanel } from "@/components/DarkPanel";
+import { RoleGate } from "@/components/RoleGate";
 import {
   apiPath,
   buildMatches,
@@ -103,7 +104,14 @@ export function ContractorArea() {
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+    <RoleGate
+      mode="company"
+      onSessionChange={setSession}
+      session={session}
+      title="Area do contratante"
+      text="Esta tela mostra candidatos, filtros, matches e vaga ativa. Ela fica disponivel apenas para contas de contratante."
+    >
+      <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
         <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
           <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Area do contratante</p>
@@ -118,7 +126,7 @@ export function ContractorArea() {
           </div>
         </section>
 
-        <AuthPanel defaultMode="company" onSessionChange={setSession} session={session} />
+        <AuthPanel defaultMode="company" lockMode onSessionChange={setSession} session={session} />
 
         <section className="compact-box bg-[#f4f1eb] text-[#111111]">
           <div className="mb-3 flex items-center justify-between">
@@ -243,7 +251,8 @@ export function ContractorArea() {
           )}
         </DarkPanel>
       </div>
-    </div>
+      </div>
+    </RoleGate>
   );
 }
 
