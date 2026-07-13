@@ -225,18 +225,6 @@ O GitHub Pages publica apenas a versão estática da interface. Recursos que dep
 
 ---
 
-## Próximas evoluções
-
-- Autorização granular para proteger feed, matches e conversas
-- Upload real de imagens e avatares
-- Notificações de novos matches e mensagens
-- Busca avançada e filtros combinados
-- Status de candidatura e etapas do pipeline
-- Perfil público compartilhável
-- Testes automatizados de interface e API
-- Painel administrativo e moderação
-
----
 
 ## Objetivo do projeto
 
