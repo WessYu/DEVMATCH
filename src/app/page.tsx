@@ -50,23 +50,23 @@ export default function Home() {
       <section className="home-stage product-frame">
         <div className="home-hero-panel">
           <div className="flex items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#111111]/10 px-3 py-1 text-xs font-black">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-black text-slate-200">
               <DevMatchLogo className="size-5" />
               DevMatch
             </div>
-            <span className="rounded-full bg-[#111111] px-3 py-1 text-xs font-black text-white">
+            <span className="rounded-full bg-white/12 px-3 py-1 text-xs font-black text-white">
               workspace ativo
             </span>
           </div>
 
           <div className="mt-10 max-w-2xl">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#675f55]">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
               Plataforma de hiring para times técnicos
             </p>
-            <h1 className="mt-3 text-5xl font-black leading-[0.94] tracking-[-0.04em] text-[#111111] sm:text-6xl">
+            <h1 className="mt-3 text-5xl font-black leading-[0.94] text-white sm:text-6xl">
               Um pipeline limpo para avaliar devs com contexto.
             </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-[#4a4640]">
+            <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">
               DevMatch separa contratante e dev, organiza sinais técnicos e leva o match para uma conversa objetiva.
             </p>
           </div>
@@ -77,12 +77,12 @@ export default function Home() {
 
               return (
                 <Link className={`home-role-card ${role.primary ? "is-primary" : ""}`} href={role.href} key={role.href}>
-                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#111111] text-white">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/12 text-white">
                     <Icon className="size-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-lg font-black text-[#111111]">{role.title}</span>
-                    <span className="mt-1 block text-sm leading-6 text-[#4a4640]">{role.text}</span>
+                    <span className="block text-lg font-black text-white">{role.title}</span>
+                    <span className="mt-1 block text-sm leading-6 text-slate-400">{role.text}</span>
                   </span>
                   <span className="home-role-action">
                     {role.action}
@@ -140,6 +140,25 @@ export default function Home() {
                 </div>
               </div>
 
+              <div className="home-showcase-deck" aria-label="Candidatos em destaque">
+                {featuredProfiles.map((profile) => (
+                  <Link className="home-showcase-card" href="/contratante" key={profile.id}>
+                    <Image alt={`Foto de ${profile.name}`} className="h-full w-full object-cover" height={360} src={profile.avatar} unoptimized width={280} />
+                    <span className="home-showcase-shade" />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/18 px-2.5 py-1 text-[10px] font-black text-white backdrop-blur-md">
+                      {profile.seniority}
+                    </span>
+                    <span className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-white text-[#111111]">
+                      <ArrowRight className="size-4" />
+                    </span>
+                    <span className="absolute inset-x-3 bottom-3">
+                      <span className="block text-base font-black text-white">{profile.name.split(" ")[0]}</span>
+                      <span className="mt-1 block truncate text-[11px] font-bold text-slate-200">{profile.role}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+
               <div className="mt-5 grid gap-3">
                 {featuredProfiles.map((profile) => (
                   <Link className="home-profile-row" href="/contratante" key={profile.id}>
@@ -157,12 +176,12 @@ export default function Home() {
             </section>
 
             <aside className="home-preview-side">
-              <div className="rounded-xl bg-[#f4f1eb] p-4 text-[#111111]">
+              <div className="rounded-xl border border-white/10 bg-white/10 p-4 text-white">
                 <div className="flex items-center gap-2 text-sm font-black">
                   <BriefcaseBusiness className="size-4" />
                   Requisição ativa
                 </div>
-                <p className="mt-3 text-sm leading-6 text-[#4a4640]">
+                <p className="mt-3 text-sm leading-6 text-slate-300">
                   Front-end SaaS, React, Next.js, TypeScript e colaboração remota.
                 </p>
               </div>
@@ -215,9 +234,9 @@ export default function Home() {
 
 function HomeMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[#111111]/10 bg-white/45 p-4">
-      <p className="text-2xl font-black text-[#111111]">{value}</p>
-      <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-[#665f55]">{label}</p>
+    <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
+      <p className="text-2xl font-black text-white">{value}</p>
+      <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">{label}</p>
     </div>
   );
 }

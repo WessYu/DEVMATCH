@@ -96,10 +96,10 @@ export function DeveloperArea() {
     >
       <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
-        <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Console do dev</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Perfil técnico pronto para triagem.</h1>
-          <p className="mt-4 text-sm leading-6 text-[#4a4640]">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.07] p-5 text-white">
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Console do dev</p>
+          <h1 className="text-4xl font-black leading-[0.96]">Perfil técnico pronto para triagem.</h1>
+          <p className="mt-4 text-sm leading-6 text-slate-300">
             Mantenha bio, stack, projeto principal e repositórios organizados para conversas de contratação.
           </p>
         </section>
@@ -133,7 +133,7 @@ export function DeveloperArea() {
 
           <aside className="rounded-xl border border-white/10 bg-black/20 p-4">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Preview</p>
-            <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-white">{portfolio.name}</h2>
+            <h2 className="mt-3 text-3xl font-black text-white">{portfolio.name}</h2>
             <p className="mt-1 text-sm font-bold text-cyan-100">{portfolio.role}</p>
             <p className="mt-3 text-sm leading-6 text-slate-300">{portfolio.bio}</p>
             <div className="mt-4 flex flex-wrap gap-2">

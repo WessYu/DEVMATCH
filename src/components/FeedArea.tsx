@@ -171,10 +171,10 @@ export function FeedArea() {
   return (
     <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
-        <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Feed compartilhado</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Atualizações, vagas e portfólio no mesmo lugar.</h1>
-          <p className="mt-4 text-sm leading-6 text-[#4a4640]">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.07] p-5 text-white">
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Feed compartilhado</p>
+          <h1 className="text-4xl font-black leading-[0.96]">Atualizações, vagas e portfólio no mesmo lugar.</h1>
+          <p className="mt-4 text-sm leading-6 text-slate-300">
             Contratantes e devs enxergam o mesmo mural. Publique vaga, projeto, chamada para parceria, foto, link e tags.
           </p>
           <div className="mt-5 grid grid-cols-3 gap-2">
@@ -292,9 +292,9 @@ function FeedCard({ post }: { post: FeedPost }) {
 
 function FeedMetric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-[#111111]/10 bg-white/50 px-3 py-3">
+    <div className="rounded-lg border border-white/10 bg-white/8 px-3 py-3">
       <p className="truncate text-lg font-black">{value}</p>
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#645f58]">{label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
     </div>
   );
 }

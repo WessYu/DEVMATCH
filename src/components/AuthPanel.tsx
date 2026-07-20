@@ -110,7 +110,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
         <span className="text-sm font-bold">{authIntent === "signup" ? "Criar conta" : "Entrar"}</span>
         {session ? <ShieldCheck className="size-4" /> : <KeyRound className="size-4" />}
       </div>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/8 p-1">
         <button className={`segmented-button ${authIntent === "signup" ? "is-active" : ""}`} onClick={() => setAuthIntent("signup")} type="button">
           Criar conta
         </button>
@@ -119,11 +119,11 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
         </button>
       </div>
       {lockMode ? (
-        <div className="rounded-lg bg-[#111111]/6 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#4a4640]">
+        <div className="rounded-lg bg-white/8 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate-300">
           {defaultMode === "company" ? "Acesso de contratante" : "Acesso de dev"}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#111111]/5 p-1">
+        <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/8 p-1">
           <button className={`segmented-button ${authMode === "company" ? "is-active" : ""}`} onClick={() => setAuthMode("company")} type="button">
             Empresa
           </button>
@@ -140,10 +140,10 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
         {!hydrated ? "Carregando..." : loggingOut ? "Saindo..." : authPending ? "Validando..." : authIntent === "signup" ? "Criar acesso" : "Entrar"}
       </button>
       {session ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-[#111111]/6 px-3 py-2">
-          <span className="min-w-0 text-xs font-bold text-[#29251f]">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-white/8 px-3 py-2">
+          <span className="min-w-0 text-xs font-bold text-white">
             <span className="block truncate">{session.name}</span>
-            <span className="block truncate font-semibold text-[#6a6257]">{session.email}</span>
+            <span className="block truncate font-semibold text-slate-400">{session.email}</span>
           </span>
           <button aria-label="Sair" className="rounded-md bg-white px-2 py-2" disabled={loggingOut} onClick={logout} type="button">
             <LogOut className="size-4" />

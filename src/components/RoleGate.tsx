@@ -85,23 +85,23 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
   return (
     <section className="role-gate product-frame">
       <div className="role-gate-copy">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#111111]/10 px-3 py-1 text-xs font-black">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-black text-slate-200">
           <Icon className="size-4" />
           Acesso restrito
         </div>
-        <h1 className="mt-8 text-5xl font-black leading-[0.92] tracking-[-0.04em] text-[#111111]">{title}</h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-[#4a4640]">{text}</p>
-        <div className="mt-8 grid gap-2 rounded-xl bg-white/48 p-3">
-          <div className="flex items-center gap-2 text-sm font-black text-[#111111]">
+        <h1 className="mt-8 text-5xl font-black leading-[0.92] text-white">{title}</h1>
+        <p className="mt-5 max-w-lg text-base leading-7 text-slate-300">{text}</p>
+        <div className="mt-8 grid gap-2 rounded-xl border border-white/10 bg-white/8 p-3">
+          <div className="flex items-center gap-2 text-sm font-black text-white">
             <LockKeyhole className="size-4" />
             Entre como {copy.label} para ver esta área.
           </div>
           {session ? (
-            <p className="text-sm leading-6 text-[#4a4640]">
+            <p className="text-sm leading-6 text-slate-300">
               Sua sessão atual é de {session.mode === "company" ? "contratante" : "dev"}. Use a área correta ou saia para trocar o tipo de acesso.
             </p>
           ) : (
-            <p className="text-sm leading-6 text-[#4a4640]">
+            <p className="text-sm leading-6 text-slate-300">
               {checked ? "Nenhuma sessão válida encontrada." : "Verificando sessão..."}
             </p>
           )}

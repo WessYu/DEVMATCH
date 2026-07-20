@@ -114,10 +114,10 @@ export function ContractorArea() {
     >
       <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
       <aside className="motion-in flex flex-col gap-4">
-        <section className="rounded-xl bg-[#f4f1eb] p-5 text-[#111111]">
-          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-[#716a60]">Workspace do contratante</p>
-          <h1 className="text-4xl font-black leading-[0.96] tracking-[-0.04em]">Pipeline de avaliação técnica.</h1>
-          <p className="mt-4 text-sm leading-6 text-[#4a4640]">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.07] p-5 text-white">
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Workspace do contratante</p>
+          <h1 className="text-4xl font-black leading-[0.96]">Pipeline de avaliação técnica.</h1>
+          <p className="mt-4 text-sm leading-6 text-slate-300">
             Revise candidatos por stack, evidências de portfólio e status de match.
           </p>
           <div className="mt-5 grid grid-cols-3 gap-2">
@@ -129,15 +129,15 @@ export function ContractorArea() {
 
         <AuthPanel defaultMode="company" lockMode onSessionChange={setSession} session={session} />
 
-        <section className="compact-box bg-[#f4f1eb] text-[#111111]">
+        <section className="compact-box">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-bold">Vaga atual</span>
             <BriefcaseBusiness className="size-4" />
           </div>
-          <p className="text-sm leading-6 text-[#4a4640]">{companyProfile.role}</p>
+          <p className="text-sm leading-6 text-slate-300">{companyProfile.role}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {companyProfile.stack.map((skill) => (
-              <span className="rounded-full bg-[#111111]/8 px-2 py-1 text-[11px] font-bold" key={skill}>
+              <span className="rounded-full bg-white/10 px-2 py-1 text-[11px] font-bold text-slate-200" key={skill}>
                 {skill}
               </span>
             ))}
@@ -186,7 +186,7 @@ export function ContractorArea() {
                     <div>
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="text-2xl font-black tracking-[-0.03em] text-white">{developer.name}</h3>
+                          <h3 className="text-2xl font-black text-white">{developer.name}</h3>
                           <p className="mt-1 text-sm font-bold text-cyan-100">{developer.role}</p>
                         </div>
                         <span className="rounded-full border border-white/10 px-2 py-1 text-[11px] font-bold text-slate-300">{developer.seniority}</span>
@@ -259,9 +259,9 @@ export function ContractorArea() {
 
 function Metric({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="rounded-lg border border-[#111111]/10 bg-white/50 px-3 py-3">
+    <div className="rounded-lg border border-white/10 bg-white/8 px-3 py-3">
       <p className="truncate text-lg font-black">{value}</p>
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#645f58]">{label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
     </div>
   );
 }
