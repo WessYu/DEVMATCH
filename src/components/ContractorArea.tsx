@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
@@ -19,6 +19,9 @@ import {
 } from "@/lib/client-utils";
 import { companyProfile, stackOptions } from "@/lib/devmatch-data";
 
+const swipeThreshold = 108;
+const swipeExitDistance = 560;
+
 export function ContractorArea() {
   const [profiles, setProfiles] = useState<EnrichedDeveloper[]>(fallbackProfiles);
   const [activeStack, setActiveStack] = useState("Todos");
@@ -26,14 +29,15 @@ export function ContractorArea() {
   const [passedIds, setPassedIds] = useState<string[]>(() => readJsonStorage("devmatch-passed", []));
   const [matches, setMatches] = useState<Match[]>(() => readJsonStorage("devmatch-matches", []));
   const [session, setSession] = useState<UserSession | null>(null);
-  const deckRef = useRef<HTMLDivElement | null>(null);
 
   const visibleProfiles = useMemo(() => {
     return profiles.filter((profile) => {
       const stackMatch = activeStack === "Todos" || profile.stack.includes(activeStack);
-      return stackMatch && !passedIds.includes(profile.id);
+      return stackMatch && !likedIds.includes(profile.id) && !passedIds.includes(profile.id);
     });
-  }, [activeStack, passedIds, profiles]);
+  }, [activeStack, likedIds, passedIds, profiles]);
+
+  const currentDeveloper = visibleProfiles[0];
 
   useEffect(() => {
     async function loadProfiles() {
@@ -97,13 +101,6 @@ export function ContractorArea() {
     setLikedIds((current) => current.filter((item) => item !== id));
   }
 
-  function scrollDeck(direction: "left" | "right") {
-    deckRef.current?.scrollBy({
-      left: direction === "right" ? 390 : -390,
-      behavior: "smooth",
-    });
-  }
-
   return (
     <RoleGate
       mode="company"
@@ -161,71 +158,39 @@ export function ContractorArea() {
         </div>
 
         <div className="relative p-3 sm:p-4">
-          <div className="mb-3 flex justify-end gap-2">
-            <button aria-label="Voltar cards" className="icon-button" onClick={() => scrollDeck("left")} type="button">
-              <X className="size-4 rotate-45" />
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="swipe-hint">
+              Arraste o card: esquerda para não, direita para sim.
+            </p>
+            <div className="flex justify-end gap-2">
+            <button aria-label="Não para o primeiro card" className="icon-button swipe-control is-no" disabled={!currentDeveloper} onClick={() => currentDeveloper ? passDeveloper(currentDeveloper.id) : undefined} type="button">
+              <X className="size-4" />
+              <span>Não</span>
             </button>
-            <button aria-label="Avancar cards" className="icon-button" onClick={() => scrollDeck("right")} type="button">
+            <button aria-label="Sim para o primeiro card" className="icon-button swipe-control is-yes" disabled={!currentDeveloper} onClick={() => currentDeveloper ? likeDeveloper(currentDeveloper.id) : undefined} type="button">
               <Heart className="size-4" />
+              <span>Sim</span>
             </button>
+            </div>
           </div>
 
-          <div className="deck-scroll" ref={deckRef}>
-            {visibleProfiles.map((developer) => {
-              const liked = likedIds.includes(developer.id);
-
-              return (
-                <article className="candidate-card" key={developer.id}>
-                  <div className="candidate-photo">
-                    <Image alt={`Foto de ${developer.name}`} className="h-full w-full object-cover" height={720} src={developer.avatar} unoptimized width={640} />
-                      <div className="absolute left-3 top-3 rounded-full bg-[#f4f1eb] px-3 py-1 text-xs font-black text-[#111111]">
-                      {developer.compatibility.score}% aderente
-                    </div>
-                  </div>
-                  <div className="flex min-h-[330px] flex-col p-4">
-                    <div>
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-2xl font-black text-white">{developer.name}</h3>
-                          <p className="mt-1 text-sm font-bold text-cyan-100">{developer.role}</p>
-                        </div>
-                        <span className="rounded-full border border-white/10 px-2 py-1 text-[11px] font-bold text-slate-300">{developer.seniority}</span>
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-slate-300">{developer.bio}</p>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {developer.stack.slice(0, 5).map((skill) => (
-                          <span className="rounded-full bg-white/8 px-2 py-1 text-[11px] font-bold text-slate-200" key={skill}>
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 space-y-2">
-                      {developer.projects.map((project) => (
-                        <a className="repo-row" href={project.link} key={project.name} rel="noreferrer" target="_blank">
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-bold text-white">{project.name}</span>
-                            <span className="line-clamp-1 text-xs text-slate-400">{project.description}</span>
-                          </span>
-                        </a>
-                      ))}
-                    </div>
-
-                    <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
-                      <button className="light-button is-secondary" onClick={() => passDeveloper(developer.id)} type="button">
-                        <X className="size-4" />
-                        Passar
-                      </button>
-                      <button className="light-button" onClick={() => likeDeveloper(developer.id)} type="button">
-                        <Heart className="size-4" />
-                        {liked ? "Match feito" : "Dar match"}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="deck-scroll">
+            {visibleProfiles.length ? (
+              visibleProfiles.map((developer) => (
+                <CandidateCard
+                  developer={developer}
+                  key={developer.id}
+                  onLike={likeDeveloper}
+                  onPass={passDeveloper}
+                />
+              ))
+            ) : (
+              <div className="deck-empty">
+                <BadgeCheck className="size-8 text-cyan-100" />
+                <p className="mt-3 text-sm font-black text-white">Fila revisada.</p>
+                <p className="mt-1 text-sm leading-6 text-slate-400">Troque o filtro ou acompanhe os matches abertos abaixo.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -254,6 +219,176 @@ export function ContractorArea() {
       </div>
       </div>
     </RoleGate>
+  );
+}
+
+function CandidateCard({
+  developer,
+  onLike,
+  onPass,
+}: {
+  developer: EnrichedDeveloper;
+  onLike: (id: string) => void;
+  onPass: (id: string) => void;
+}) {
+  const cardRef = useRef<HTMLElement | null>(null);
+  const pointerIdRef = useRef<number | null>(null);
+  const startRef = useRef({ x: 0, y: 0 });
+  const latestDragRef = useRef({ x: 0, y: 0 });
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [drag, setDrag] = useState({ x: 0, y: 0, active: false, leaving: false });
+
+  useEffect(() => {
+    return () => {
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+      }
+    };
+  }, []);
+
+  function resetCard() {
+    latestDragRef.current = { x: 0, y: 0 };
+    setDrag({ x: 0, y: 0, active: false, leaving: false });
+  }
+
+  function finishSwipe(decision: "like" | "pass", x: number, y: number) {
+    const exitX = decision === "like" ? Math.max(x, swipeExitDistance) : Math.min(x, -swipeExitDistance);
+    latestDragRef.current = { x: exitX, y };
+    setDrag({ x: exitX, y: y * 0.2, active: false, leaving: true });
+
+    exitTimerRef.current = setTimeout(() => {
+      if (decision === "like") {
+        onLike(developer.id);
+      } else {
+        onPass(developer.id);
+      }
+    }, 190);
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLElement>) {
+    if (drag.leaving || event.button > 0 || (event.target as HTMLElement).closest("a,button")) {
+      return;
+    }
+
+    pointerIdRef.current = event.pointerId;
+    startRef.current = { x: event.clientX, y: event.clientY };
+    latestDragRef.current = { x: 0, y: 0 };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDrag({ x: 0, y: 0, active: true, leaving: false });
+  }
+
+  function handlePointerMove(event: PointerEvent<HTMLElement>) {
+    if (pointerIdRef.current !== event.pointerId || drag.leaving) {
+      return;
+    }
+
+    const x = event.clientX - startRef.current.x;
+    const y = event.clientY - startRef.current.y;
+    latestDragRef.current = { x, y };
+    setDrag({ x, y, active: true, leaving: false });
+  }
+
+  function handlePointerUp(event: PointerEvent<HTMLElement>) {
+    if (pointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    pointerIdRef.current = null;
+
+    const { x, y } = latestDragRef.current;
+    if (Math.abs(x) >= swipeThreshold) {
+      finishSwipe(x > 0 ? "like" : "pass", x, y);
+      return;
+    }
+
+    resetCard();
+  }
+
+  function handlePointerCancel(event: PointerEvent<HTMLElement>) {
+    if (pointerIdRef.current === event.pointerId) {
+      pointerIdRef.current = null;
+      resetCard();
+    }
+  }
+
+  function handleButtonSwipe(decision: "like" | "pass") {
+    finishSwipe(decision, decision === "like" ? swipeThreshold : -swipeThreshold, 0);
+  }
+
+  const dragPower = Math.min(1, Math.abs(drag.x) / swipeThreshold);
+  const decision = drag.x > 34 ? "like" : drag.x < -34 ? "pass" : null;
+  const rotation = Math.max(-7, Math.min(7, drag.x / 26));
+  const cardStyle: CSSProperties = {
+    transform: `translate3d(${drag.x}px, ${drag.y * 0.16}px, 0) rotate(${rotation}deg)`,
+    transition: drag.active ? "none" : "transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+  };
+
+  return (
+    <article
+      className={`candidate-card ${drag.active ? "is-dragging" : ""} ${drag.leaving ? "is-leaving" : ""}`}
+      onPointerCancel={handlePointerCancel}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      ref={cardRef}
+      style={cardStyle}
+    >
+      <div className="swipe-feedback is-pass" style={{ opacity: decision === "pass" ? 0.28 + dragPower * 0.72 : 0 }}>
+        Não
+      </div>
+      <div className="swipe-feedback is-like" style={{ opacity: decision === "like" ? 0.28 + dragPower * 0.72 : 0 }}>
+        Sim
+      </div>
+
+      <div className="candidate-photo">
+        <Image alt={`Foto de ${developer.name}`} className="h-full w-full object-cover" draggable={false} height={720} src={developer.avatar} unoptimized width={640} />
+        <div className="absolute left-3 top-3 rounded-full bg-[#f4f1eb] px-3 py-1 text-xs font-black text-[#111111]">
+          {developer.compatibility.score}% aderente
+        </div>
+      </div>
+      <div className="candidate-card-body">
+        <div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="truncate text-2xl font-black text-white">{developer.name}</h3>
+              <p className="mt-1 truncate text-sm font-bold text-cyan-100">{developer.role}</p>
+            </div>
+            <span className="rounded-full border border-white/10 px-2 py-1 text-[11px] font-bold text-slate-300">{developer.seniority}</span>
+          </div>
+          <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-300">{developer.bio}</p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {developer.stack.slice(0, 5).map((skill) => (
+              <span className="rounded-full bg-white/8 px-2 py-1 text-[11px] font-bold text-slate-200" key={skill}>
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-2">
+          {developer.projects.slice(0, 2).map((project) => (
+            <a className="repo-row" href={project.link} key={project.name} rel="noreferrer" target="_blank">
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-bold text-white">{project.name}</span>
+                <span className="line-clamp-1 text-xs text-slate-400">{project.description}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
+          <button className="light-button is-secondary" onClick={() => handleButtonSwipe("pass")} type="button">
+            <X className="size-4" />
+            Passar
+          </button>
+          <button className="light-button" onClick={() => handleButtonSwipe("like")} type="button">
+            <Heart className="size-4" />
+            Dar match
+          </button>
+        </div>
+      </div>
+    </article>
   );
 }
 
