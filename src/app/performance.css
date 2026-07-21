@@ -1,0 +1,93 @@
+/* Otimizações de renderização sem alterar o layout. */
+.feed-card,
+.feed-composer,
+.candidate-card,
+.match-row,
+.repo-row,
+.compact-box,
+.home-profile-row,
+.home-step,
+.home-chat-card,
+.role-gate-copy,
+.role-gate-panel {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
+
+.candidate-card,
+.swipe-candidate-card,
+.home-showcase-card {
+  contain: layout paint style;
+}
+
+.ambient-field,
+.ambient-streak,
+.workspace-card,
+.product-frame,
+.swipe-candidate-card {
+  transform: translateZ(0);
+}
+
+@media (max-width: 720px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .ambient-field::before,
+  .ambient-streak {
+    filter: none !important;
+  }
+
+  .ambient-streak {
+    opacity: 0.12 !important;
+  }
+
+  .workspace-card,
+  .product-frame,
+  .home-hero-panel,
+  .home-product-preview,
+  .compact-box,
+  .role-gate-copy,
+  .role-gate-panel {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .workspace-card,
+  .candidate-card,
+  .swipe-candidate-card {
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34) !important;
+  }
+
+  .swipe-candidate-score,
+  .swipe-candidate-copy em {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (hover: none) {
+  .home-role-card:hover,
+  .home-profile-row:hover,
+  .home-chat-card:hover,
+  .repo-row:hover,
+  .match-row:hover,
+  .light-button:hover,
+  .icon-button:hover {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
