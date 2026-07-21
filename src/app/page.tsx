@@ -191,10 +191,10 @@ export default function Home() {
                   </div>
 
                   <div className="ux-decision-row">
-                    <button aria-label="Revisar perfil depois" className="ux-pass-button" type="button">
+                    <Link aria-label="Revisar perfil depois" className="ux-pass-button" href="/contratante">
                       <GitBranch className="size-4" />
                       Revisar depois
-                    </button>
+                    </Link>
                     <Link className="ux-match-button" href="/contratante">
                       <Heart className="size-4" />
                       Criar match
