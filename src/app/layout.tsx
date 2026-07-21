@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./ux-polish.css";
 import "./swipe-deck.css";
 
 const geistSans = Geist({
@@ -15,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DevMatch — Talent intelligence para times técnicos",
+  title: "DevMatch - Tinder de Dev + Portfólio Interativo",
   description:
-    "Conecte empresas e desenvolvedores por evidências técnicas, compatibilidade e contexto real de projeto.",
+    "Plataforma de match entre empresas e desenvolvedores com swipe, portfólio vivo, GitHub e chat.",
 };
 
 export default function RootLayout({
