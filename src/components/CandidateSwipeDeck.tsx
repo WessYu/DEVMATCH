@@ -6,75 +6,136 @@ import { Heart, RotateCcw, X } from "lucide-react";
 import { type CSSProperties, type PointerEvent, useMemo, useRef, useState } from "react";
 import { fallbackProfiles } from "@/lib/client-utils";
 
-const swipeThreshold = 92;
-const exitDistance = 520;
+const swipeThreshold = 76;
+const exitDistance = 560;
+const exitDuration = 180;
 
 export function CandidateSwipeDeck() {
   const profiles = useMemo(() => fallbackProfiles.slice(0, 5), []);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [drag, setDrag] = useState({ x: 0, y: 0, active: false, leaving: false });
+  const [leaving, setLeaving] = useState(false);
   const pointerId = useRef<number | null>(null);
   const origin = useRef({ x: 0, y: 0 });
+  const latest = useRef({ x: 0, y: 0 });
+  const frame = useRef<number | null>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const likeRef = useRef<HTMLSpanElement | null>(null);
+  const passRef = useRef<HTMLSpanElement | null>(null);
 
   const visibleProfiles = profiles.slice(activeIndex, activeIndex + 3);
   const activeProfile = visibleProfiles[0];
 
-  function resetDrag() {
-    pointerId.current = null;
-    setDrag({ x: 0, y: 0, active: false, leaving: false });
+  function paint(x: number, y: number) {
+    const card = cardRef.current;
+    if (!card) return;
+
+    latest.current = { x, y };
+
+    if (frame.current !== null) return;
+
+    frame.current = window.requestAnimationFrame(() => {
+      const next = latest.current;
+      card.style.transform = `translate3d(${next.x}px, ${next.y}px, 0) rotate(${next.x / 22}deg)`;
+
+      if (likeRef.current) {
+        likeRef.current.style.opacity = String(Math.min(Math.max(next.x / swipeThreshold, 0), 1));
+      }
+
+      if (passRef.current) {
+        passRef.current.style.opacity = String(Math.min(Math.max(-next.x / swipeThreshold, 0), 1));
+      }
+
+      frame.current = null;
+    });
+  }
+
+  function clearFrame() {
+    if (frame.current !== null) {
+      window.cancelAnimationFrame(frame.current);
+      frame.current = null;
+    }
+  }
+
+  function resetVisual() {
+    clearFrame();
+    latest.current = { x: 0, y: 0 };
+
+    const card = cardRef.current;
+    if (card) {
+      card.classList.remove("is-dragging", "is-leaving");
+      card.style.transform = "translate3d(0, 0, 0) rotate(0deg)";
+    }
+
+    if (likeRef.current) likeRef.current.style.opacity = "0";
+    if (passRef.current) passRef.current.style.opacity = "0";
   }
 
   function completeSwipe(direction: "left" | "right") {
-    if (!activeProfile || drag.leaving) return;
+    if (!activeProfile || leaving) return;
 
-    setDrag((current) => ({
-      ...current,
-      x: direction === "right" ? exitDistance : -exitDistance,
-      y: current.y,
-      active: false,
-      leaving: true,
-    }));
+    setLeaving(true);
+    pointerId.current = null;
+    clearFrame();
+
+    const card = cardRef.current;
+    if (card) {
+      card.classList.remove("is-dragging");
+      card.classList.add("is-leaving");
+      card.style.transform = `translate3d(${direction === "right" ? exitDistance : -exitDistance}px, ${latest.current.y}px, 0) rotate(${direction === "right" ? 18 : -18}deg)`;
+    }
 
     window.setTimeout(() => {
       setActiveIndex((current) => current + 1);
-      resetDrag();
-    }, 230);
+      setLeaving(false);
+      window.requestAnimationFrame(resetVisual);
+    }, exitDuration);
   }
 
   function onPointerDown(event: PointerEvent<HTMLElement>) {
-    if (!activeProfile || drag.leaving) return;
+    if (!activeProfile || leaving) return;
 
     pointerId.current = event.pointerId;
     origin.current = { x: event.clientX, y: event.clientY };
+    latest.current = { x: 0, y: 0 };
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDrag({ x: 0, y: 0, active: true, leaving: false });
+    event.currentTarget.classList.add("is-dragging");
   }
 
   function onPointerMove(event: PointerEvent<HTMLElement>) {
-    if (pointerId.current !== event.pointerId || !drag.active) return;
+    if (pointerId.current !== event.pointerId) return;
 
     const x = event.clientX - origin.current.x;
-    const y = (event.clientY - origin.current.y) * 0.28;
-    setDrag({ x, y, active: true, leaving: false });
+    const y = (event.clientY - origin.current.y) * 0.18;
+    paint(x, y);
   }
 
   function onPointerUp(event: PointerEvent<HTMLElement>) {
     if (pointerId.current !== event.pointerId) return;
 
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    pointerId.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
 
-    if (Math.abs(drag.x) >= swipeThreshold) {
-      completeSwipe(drag.x > 0 ? "right" : "left");
+    pointerId.current = null;
+    event.currentTarget.classList.remove("is-dragging");
+
+    if (Math.abs(latest.current.x) >= swipeThreshold) {
+      completeSwipe(latest.current.x > 0 ? "right" : "left");
       return;
     }
 
-    setDrag({ x: 0, y: 0, active: false, leaving: false });
+    resetVisual();
+  }
+
+  function onPointerCancel() {
+    pointerId.current = null;
+    resetVisual();
   }
 
   function restart() {
     setActiveIndex(0);
-    resetDrag();
+    setLeaving(false);
+    window.requestAnimationFrame(resetVisual);
   }
 
   if (!activeProfile) {
@@ -96,9 +157,6 @@ export function CandidateSwipeDeck() {
     );
   }
 
-  const likeOpacity = Math.min(Math.max(drag.x / swipeThreshold, 0), 1);
-  const passOpacity = Math.min(Math.max(-drag.x / swipeThreshold, 0), 1);
-
   return (
     <div className="swipe-demo" aria-label="Escolha de candidatos por swipe">
       <div className="swipe-demo-heading">
@@ -115,23 +173,17 @@ export function CandidateSwipeDeck() {
           .reverse()
           .map(({ profile, index }) => {
             const isActive = index === 0;
-            const style = isActive
-              ? ({
-                  "--swipe-x": `${drag.x}px`,
-                  "--swipe-y": `${drag.y}px`,
-                  "--swipe-rotate": `${drag.x / 18}deg`,
-                } as CSSProperties)
-              : ({ "--stack-index": index } as CSSProperties);
 
             return (
               <article
-                className={`swipe-candidate-card ${isActive ? "is-active" : "is-stacked"} ${drag.active && isActive ? "is-dragging" : ""} ${drag.leaving && isActive ? "is-leaving" : ""}`}
+                className={`swipe-candidate-card ${isActive ? "is-active" : "is-stacked"}`}
                 key={profile.id}
-                onPointerCancel={isActive ? resetDrag : undefined}
+                onPointerCancel={isActive ? onPointerCancel : undefined}
                 onPointerDown={isActive ? onPointerDown : undefined}
                 onPointerMove={isActive ? onPointerMove : undefined}
                 onPointerUp={isActive ? onPointerUp : undefined}
-                style={style}
+                ref={isActive ? cardRef : undefined}
+                style={!isActive ? ({ "--stack-index": index } as CSSProperties) : undefined}
               >
                 <Image
                   alt={`Foto de ${profile.name}`}
@@ -146,8 +198,8 @@ export function CandidateSwipeDeck() {
 
                 {isActive ? (
                   <>
-                    <span className="swipe-stamp is-pass" style={{ opacity: passOpacity }}>Passar</span>
-                    <span className="swipe-stamp is-like" style={{ opacity: likeOpacity }}>Match</span>
+                    <span className="swipe-stamp is-pass" ref={passRef}>Passar</span>
+                    <span className="swipe-stamp is-like" ref={likeRef}>Match</span>
                   </>
                 ) : null}
 
