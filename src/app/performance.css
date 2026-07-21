@@ -1,4 +1,4 @@
-/* Otimizações de renderização sem alterar o layout. */
+/* Otimizações agressivas de renderização sem alterar a estrutura visual. */
 .feed-card,
 .feed-composer,
 .candidate-card,
@@ -9,60 +9,98 @@
 .home-step,
 .home-chat-card,
 .role-gate-copy,
-.role-gate-panel {
+.role-gate-panel,
+.home-preview-side > *,
+.dark-panel {
   content-visibility: auto;
   contain-intrinsic-size: auto 240px;
 }
 
 .candidate-card,
 .swipe-candidate-card,
-.home-showcase-card {
+.home-showcase-card,
+.home-profile-row,
+.feed-card,
+.repo-row,
+.match-row {
   contain: layout paint style;
 }
 
+.swipe-candidate-card.is-active,
+.candidate-card.is-dragging {
+  will-change: transform;
+}
+
+/* Evita manter várias camadas promovidas na GPU o tempo todo. */
 .ambient-field,
 .ambient-streak,
 .workspace-card,
+.product-frame {
+  will-change: auto !important;
+}
+
+/* O fundo continua visualmente presente, mas sem animação contínua. */
+.ambient-streak,
+.ambient-field::before,
+.ambient-field::after {
+  animation: none !important;
+}
+
+.ambient-streak {
+  opacity: 0.08 !important;
+  filter: none !important;
+}
+
+/* Backdrop blur em áreas grandes é um dos maiores gargalos de pintura. */
+.workspace-card,
 .product-frame,
-.swipe-candidate-card {
-  transform: translateZ(0);
+.home-hero-panel,
+.home-product-preview,
+.compact-box,
+.role-gate-copy,
+.role-gate-panel,
+.app-sidebar,
+.floating-tabs {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.swipe-candidate-score,
+.swipe-candidate-copy em,
+.home-showcase-card span,
+.home-profile-row,
+.match-row {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 @media (max-width: 720px) {
+  html,
   body {
-    background-attachment: scroll;
+    background-attachment: scroll !important;
   }
 
   .ambient-field::before,
+  .ambient-field::after,
   .ambient-streak {
-    filter: none !important;
-  }
-
-  .ambient-streak {
-    opacity: 0.12 !important;
-  }
-
-  .workspace-card,
-  .product-frame,
-  .home-hero-panel,
-  .home-product-preview,
-  .compact-box,
-  .role-gate-copy,
-  .role-gate-panel {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+    display: none !important;
   }
 
   .workspace-card,
   .candidate-card,
-  .swipe-candidate-card {
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34) !important;
+  .swipe-candidate-card,
+  .product-frame,
+  .home-product-preview {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
   }
 
-  .swipe-candidate-score,
-  .swipe-candidate-copy em {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+  .candidate-card,
+  .feed-card,
+  .repo-row,
+  .match-row,
+  .compact-box {
+    content-visibility: auto;
+    contain-intrinsic-size: 220px;
   }
 }
 
@@ -73,12 +111,14 @@
   .repo-row:hover,
   .match-row:hover,
   .light-button:hover,
-  .icon-button:hover {
+  .icon-button:hover,
+  .candidate-card:hover,
+  .feed-card:hover {
     transform: none !important;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (update: slow) {
   html {
     scroll-behavior: auto !important;
   }
