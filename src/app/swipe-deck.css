@@ -1,4 +1,5 @@
-.swipe-demo{display:flex;min-width:0;min-height:570px;flex-direction:column;padding:1rem;background:radial-gradient(circle at 50% 18%,rgba(125,211,252,.08),transparent 34%)}
+.swipe-demo,.swipe-deck-empty{--ux-muted:#94a3b8;--ux-text:#f4f7fb;--ux-line:rgba(255,255,255,.1);--ux-muted-strong:#cbd5e1;--ux-line-strong:rgba(255,255,255,.16)}
+.swipe-demo{display:flex;min-width:0;min-height:570px;flex-direction:column;margin-top:1rem;padding:1rem;border:1px solid rgba(255,255,255,.08);border-radius:1rem;background:radial-gradient(circle at 50% 18%,rgba(125,211,252,.08),transparent 34%),rgba(255,255,255,.025)}
 .swipe-demo-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.1rem .15rem .8rem}
 .swipe-demo-heading>span{display:grid;gap:.12rem}
 .swipe-demo-heading small{color:var(--ux-muted);font-size:.62rem;font-weight:760;letter-spacing:.12em;text-transform:uppercase}
@@ -29,7 +30,7 @@
 .swipe-demo-actions button.is-like{color:#d9f99d}
 .swipe-demo-actions button.is-like:hover{border-color:rgba(190,242,100,.35);background:rgba(190,242,100,.1)}
 .swipe-demo-actions>span{text-align:center;color:var(--ux-muted);font-size:.65rem;font-weight:690}
-.swipe-deck-empty{display:flex;min-height:570px;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--ux-line);padding:2rem;text-align:center}
+.swipe-deck-empty{display:flex;min-height:520px;flex-direction:column;align-items:center;justify-content:center;margin-top:1rem;border:1px solid var(--ux-line);border-radius:1rem;background:rgba(255,255,255,.025);padding:2rem;text-align:center}
 .swipe-deck-empty-icon{display:grid;width:58px;height:58px;place-items:center;border:1px solid rgba(190,242,100,.16);border-radius:1rem;background:rgba(190,242,100,.07);color:#d9f99d}
 .swipe-deck-empty>strong{margin-top:1rem;color:var(--ux-text);font-size:1rem}
 .swipe-deck-empty>span{max-width:19rem;margin-top:.45rem;color:var(--ux-muted);font-size:.75rem;line-height:1.6}
@@ -37,5 +38,5 @@
 .swipe-deck-empty-actions button,.swipe-deck-empty-actions a{display:inline-flex;min-height:40px;align-items:center;gap:.4rem;border:1px solid var(--ux-line);border-radius:.7rem;padding:0 .8rem;color:var(--ux-muted-strong);font-size:.68rem;font-weight:750}
 .swipe-deck-empty-actions a{background:#f7f9fc;color:#0b0e13}
 @media(max-width:960px){.swipe-demo{min-height:540px}.swipe-card-stage{min-height:390px}.swipe-candidate-card{height:390px}}
-@media(max-width:720px){.swipe-demo{min-height:520px;padding:.8rem}.swipe-card-stage{min-height:380px;padding:.7rem .3rem 1.5rem}.swipe-candidate-card{width:min(86vw,330px);height:380px}.swipe-candidate-copy>strong{font-size:1.45rem}.swipe-demo-actions{padding-inline:.35rem}.swipe-deck-empty{min-height:500px;border-left:0;border-top:1px solid var(--ux-line)}}
+@media(max-width:720px){.swipe-demo{min-height:500px;padding:.8rem}.swipe-card-stage{min-height:365px;padding:.7rem .3rem 1.2rem}.swipe-candidate-card{width:min(78vw,310px);height:365px}.swipe-candidate-copy>strong{font-size:1.45rem}.swipe-demo-actions{padding-inline:.35rem}.swipe-deck-empty{min-height:480px}}
 @media(prefers-reduced-motion:reduce){.swipe-candidate-card.is-active,.swipe-demo-actions button{transition:none}}
