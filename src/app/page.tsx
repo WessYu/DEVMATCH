@@ -5,30 +5,21 @@ import {
   BadgeCheck,
   BriefcaseBusiness,
   Code2,
-  GitBranch,
-  Heart,
   MessageCircle,
   Search,
-  ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
+import { CandidateSwipeDeck } from "@/components/CandidateSwipeDeck";
 import { ProductShell } from "@/components/ProductShell";
 import { fallbackProfiles } from "@/lib/client-utils";
 
 const featuredProfiles = fallbackProfiles.slice(0, 3);
-const selectedProfile = featuredProfiles[0];
 
 const proofPoints = [
   { value: "5 min", label: "para revisar um perfil", icon: Search },
   { value: "92%", label: "de aderência média", icon: BadgeCheck },
   { value: "1 lugar", label: "para contexto e conversa", icon: MessageCircle },
-];
-
-const signalRows = [
-  { label: "Stack principal", value: "React · Next.js", score: "Forte" },
-  { label: "Experiência SaaS", value: "3 projetos", score: "Validado" },
-  { label: "Disponibilidade", value: "Remoto", score: "Agora" },
 ];
 
 export default function Home() {
@@ -91,7 +82,7 @@ export default function Home() {
           </div>
 
           <div className="ux-demo-layout">
-            <div className="ux-candidate-stack" aria-label="Talentos em destaque">
+            <div className="ux-candidate-stack">
               <div className="ux-search-box">
                 <Search className="size-4" />
                 <span>Buscar por stack, projeto ou senioridade</span>
@@ -138,71 +129,7 @@ export default function Home() {
               </Link>
             </div>
 
-            {selectedProfile ? (
-              <article className="ux-focus-card">
-                <div className="ux-focus-photo">
-                  <Image
-                    alt={`Foto de ${selectedProfile.name}`}
-                    className="h-full w-full object-cover"
-                    height={540}
-                    src={selectedProfile.avatar}
-                    unoptimized
-                    width={520}
-                  />
-                  <span className="ux-focus-gradient" />
-                  <span className="ux-focus-badge">
-                    <BadgeCheck className="size-4" />
-                    {selectedProfile.compatibility.score}% compatível
-                  </span>
-                  <span className="ux-focus-identity">
-                    <strong>{selectedProfile.name}</strong>
-                    <small>{selectedProfile.role}</small>
-                  </span>
-                </div>
-
-                <div className="ux-focus-content">
-                  <div className="ux-focus-heading">
-                    <div>
-                      <span>Sinais de aderência</span>
-                      <strong>Decisão com contexto</strong>
-                    </div>
-                    <span className="ux-verified-chip">
-                      <ShieldCheck className="size-4" />
-                      Verificado
-                    </span>
-                  </div>
-
-                  <div className="ux-signal-list">
-                    {signalRows.map((row) => (
-                      <div className="ux-signal-row" key={row.label}>
-                        <span>
-                          <small>{row.label}</small>
-                          <strong>{row.value}</strong>
-                        </span>
-                        <em>{row.score}</em>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="ux-stack-row">
-                    {selectedProfile.stack.slice(0, 4).map((skill: string) => (
-                      <span key={skill}>{skill}</span>
-                    ))}
-                  </div>
-
-                  <div className="ux-decision-row">
-                    <Link aria-label="Revisar perfil depois" className="ux-pass-button" href="/contratante">
-                      <GitBranch className="size-4" />
-                      Revisar depois
-                    </Link>
-                    <Link className="ux-match-button" href="/contratante">
-                      <Heart className="size-4" />
-                      Criar match
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            ) : null}
+            <CandidateSwipeDeck />
           </div>
         </div>
 
