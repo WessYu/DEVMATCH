@@ -33,6 +33,12 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
 
+    function syncLocalSession() {
+      if (active) setSession(readJsonStorage<UserSession | null>("devmatch-session", null));
+    }
+
+    window.addEventListener("devmatch-session-change", syncLocalSession);
+
     async function refreshSession() {
       try {
         const response = await fetch(apiPath("/api/session"), { cache: "no-store" });
@@ -50,6 +56,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
     refreshSession().catch(() => undefined);
     return () => {
       active = false;
+      window.removeEventListener("devmatch-session-change", syncLocalSession);
     };
   }, [pathname]);
 
@@ -76,7 +83,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
             const active = pathname === item.href;
 
             return (
-              <Link className={`floating-tab ${active ? "is-active" : ""}`} href={item.href} key={item.href}>
+              <Link className={`floating-tab gap-2 ${active ? "is-active" : ""}`} href={item.href} key={item.href}>
                 <Icon className="size-4" />
                 {item.label}
               </Link>
