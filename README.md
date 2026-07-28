@@ -31,7 +31,7 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 - informa stack, senioridade e disponibilidade;
 - adiciona projetos ao portfólio;
 - publica o perfil no backend para entrar na triagem dos contratantes;
-- acompanha oportunidades e matches;
+- recebe matches persistidos associados à própria conta;
 - conversa com empresas dentro da plataforma.
 
 ## Funcionalidades
@@ -45,8 +45,9 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 - leitura de repositórios públicos do GitHub;
 - busca e filtros por tecnologia;
 - cálculo de compatibilidade entre vaga e candidato;
-- matches persistidos;
-- chat associado ao match;
+- matches persistidos e ligados às duas contas participantes;
+- hidratação dos matches pelo servidor no chat;
+- chat associado ao match com controle de acesso por participante;
 - feed com vagas e publicações;
 - persistência em PostgreSQL quando `DATABASE_URL` está configurada;
 - fallback local para a experiência sem backend;
@@ -64,9 +65,11 @@ O perfil preenchido na área do dev deixa de ser apenas um rascunho de navegador
 
 Assim, uma edição feita pelo desenvolvedor passa a alterar o dado que a empresa realmente consulta, em vez de existir somente no `localStorage`.
 
-### Match com contexto
+### Match entre contas reais
 
-As conversas não ficam isoladas. Cada chat é associado a um match, preservando o vínculo entre empresa, candidato e oportunidade.
+Quando um contratante cria um match com um perfil publicado, o backend associa o registro tanto ao e-mail da empresa quanto ao dono do perfil de desenvolvedor. A rota `/api/matches` retorna a visão adequada para cada papel: a empresa enxerga o candidato e o dev enxerga o contratante como contraparte.
+
+O chat usa o mesmo `matchKey` persistido e só libera leitura ou escrita quando a sessão pertence a uma das duas pontas do match.
 
 ### Persistência híbrida
 
@@ -110,7 +113,7 @@ src/
 └── lib/              regras, dados e integrações
 ```
 
-## Fluxo do perfil real
+## Fluxo full stack principal
 
 ```text
 Conta dev autenticada
@@ -124,6 +127,14 @@ Neon / devmatch_profiles
 GET /api/profiles
         ↓
 Triagem /contratante
+        ↓
+POST /api/matches
+        ↓
+Neon / devmatch_matches
+        ↓
+GET /api/matches
+        ↓
+Chat acessível pelas duas contas
 ```
 
 Os perfis demo continuam existindo como seed. Perfis publicados por contas reais entram na mesma consulta, recebem compatibilidade calculada e podem ser filtrados junto com os demais candidatos.
@@ -182,7 +193,7 @@ O comando `build:pages` gera uma versão estática para GitHub Pages, sem os rec
 - sistema de candidaturas por vaga;
 - recomendações com base no perfil técnico;
 - upload de currículo e foto de perfil;
-- carregar matches do servidor também na experiência do desenvolvedor;
+- vaga ativa configurável por empresa em vez do perfil estático atual;
 - moderação de publicações e perfis.
 
 ## Autor
