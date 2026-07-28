@@ -17,6 +17,10 @@ type AuthPanelProps = {
   onSessionChange: (session: UserSession | null) => void;
 };
 
+function announceSessionChange() {
+  window.dispatchEvent(new Event("devmatch-session-change"));
+}
+
 export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, session }: AuthPanelProps) {
   const [authMode, setAuthMode] = useState<"company" | "developer">(defaultMode);
   const [authIntent, setAuthIntent] = useState<"signup" | "signin">("signin");
@@ -73,6 +77,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
 
       onSessionChange(data.user);
       writeJsonStorage("devmatch-session", data.user);
+      announceSessionChange();
       formElement.reset();
     } catch {
       if (!apiBasePath) {
@@ -88,6 +93,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       };
       onSessionChange(user);
       writeJsonStorage("devmatch-session", user);
+      announceSessionChange();
     } finally {
       setAuthPending(false);
     }
@@ -99,6 +105,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       await fetch(apiPath("/api/session"), { method: "DELETE" }).catch(() => undefined);
       onSessionChange(null);
       window.localStorage.removeItem("devmatch-session");
+      announceSessionChange();
     } finally {
       setLoggingOut(false);
     }
