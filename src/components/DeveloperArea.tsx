@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { GitPullRequest, Linkedin, MessageCircle, Save, Search, ShieldCheck } from "lucide-react";
+import { GitPullRequest, Link2, MessageCircle, Save, Search, ShieldCheck } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { DarkPanel } from "@/components/DarkPanel";
 import { RoleGate } from "@/components/RoleGate";
@@ -290,9 +290,9 @@ export function DeveloperArea() {
           </p>
         </section>
         <AuthPanel defaultMode="developer" lockMode onSessionChange={setSession} session={session} />
-        <DarkPanel title="Importação rápida" icon={<Linkedin className="size-5" />}>
+        <DarkPanel title="Importação rápida" icon={<Link2 className="size-5" />}>
           <a className="light-button w-full justify-center" href={apiPath("/api/linkedin/start")}>
-            <Linkedin className="size-4" />
+            <Link2 className="size-4" />
             Importar do LinkedIn
           </a>
           <p className="mt-3 text-xs leading-5 text-slate-400">{linkedinStatus}</p>
