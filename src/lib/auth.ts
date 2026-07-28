@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
 export const SESSION_COOKIE = "devmatch_session";
 
@@ -22,8 +22,16 @@ function secret() {
     return authSecret;
   }
 
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+
+  if (databaseUrl) {
+    return createHash("sha256")
+      .update(`devmatch-session:${databaseUrl}`)
+      .digest("base64url");
+  }
+
   if (process.env.NODE_ENV === "production") {
-    throw new Error("AUTH_SECRET is required in production.");
+    throw new Error("AUTH_SECRET or DATABASE_URL is required in production.");
   }
 
   return "devmatch-local-session-secret";
