@@ -107,7 +107,17 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown authentication error";
+    console.error("[devmatch/auth]", message);
+
+    if (message.includes("AUTH_SECRET") || message.includes("DATABASE_URL")) {
+      return NextResponse.json(
+        { error: "A autenticação do servidor ainda não foi configurada corretamente." },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Não foi possível salvar o acesso agora." },
       { status: 503 },
