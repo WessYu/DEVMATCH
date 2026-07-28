@@ -30,6 +30,7 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 - cria um perfil técnico;
 - informa stack, senioridade e disponibilidade;
 - adiciona projetos ao portfólio;
+- publica o perfil no backend para entrar na triagem dos contratantes;
 - acompanha oportunidades e matches;
 - conversa com empresas dentro da plataforma.
 
@@ -38,6 +39,8 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 - cadastro e autenticação para empresas e desenvolvedores;
 - fluxos separados conforme o tipo de perfil;
 - perfis técnicos com stack, senioridade e disponibilidade;
+- publicação autenticada de perfis de desenvolvedor no Neon;
+- vínculo de cada perfil publicado à conta dona sem expor o e-mail no identificador público;
 - portfólio de projetos;
 - leitura de repositórios públicos do GitHub;
 - busca e filtros por tecnologia;
@@ -46,6 +49,7 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 - chat associado ao match;
 - feed com vagas e publicações;
 - persistência em PostgreSQL quando `DATABASE_URL` está configurada;
+- fallback local para a experiência sem backend;
 - interface responsiva para desktop e dispositivos móveis.
 
 ## Decisões técnicas
@@ -54,13 +58,19 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 
 As áreas de empresa e desenvolvedor possuem navegação, dados e objetivos diferentes. A aplicação organiza esses fluxos em rotas e componentes específicos para reduzir ambiguidades na experiência.
 
+### Perfil publicado com ownership
+
+O perfil preenchido na área do dev deixa de ser apenas um rascunho de navegador quando existe backend. A rota autenticada `/api/profile` associa o perfil à conta da sessão, gera um identificador público derivado por hash e grava os dados na mesma coleção de perfis consumida pela triagem do contratante.
+
+Assim, uma edição feita pelo desenvolvedor passa a alterar o dado que a empresa realmente consulta, em vez de existir somente no `localStorage`.
+
 ### Match com contexto
 
 As conversas não ficam isoladas. Cada chat é associado a um match, preservando o vínculo entre empresa, candidato e oportunidade.
 
 ### Persistência híbrida
 
-A aplicação pode utilizar PostgreSQL por meio do Neon quando as variáveis de ambiente estão configuradas, mantendo a estrutura preparada para uma experiência full stack.
+A aplicação pode utilizar PostgreSQL por meio do Neon quando as variáveis de ambiente estão configuradas. Sem banco disponível, os fluxos que possuem fallback continuam utilizáveis localmente para demonstração e para a versão estática.
 
 ### Interface orientada a workspace
 
@@ -99,6 +109,24 @@ src/
 ├── components/       componentes reutilizáveis
 └── lib/              regras, dados e integrações
 ```
+
+## Fluxo do perfil real
+
+```text
+Conta dev autenticada
+        ↓
+Área /dev
+        ↓
+PUT /api/profile
+        ↓
+Neon / devmatch_profiles
+        ↓
+GET /api/profiles
+        ↓
+Triagem /contratante
+```
+
+Os perfis demo continuam existindo como seed. Perfis publicados por contas reais entram na mesma consulta, recebem compatibilidade calculada e podem ser filtrados junto com os demais candidatos.
 
 ## Execução local
 
@@ -153,7 +181,8 @@ O comando `build:pages` gera uma versão estática para GitHub Pages, sem os rec
 - painel de métricas para empresas;
 - sistema de candidaturas por vaga;
 - recomendações com base no perfil técnico;
-- upload de currículo;
+- upload de currículo e foto de perfil;
+- carregar matches do servidor também na experiência do desenvolvedor;
 - moderação de publicações e perfis.
 
 ## Autor
