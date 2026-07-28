@@ -18,6 +18,7 @@ export type DeveloperProfileInput = {
   salary: string;
   availability: string;
   github: string;
+  avatar: string;
   seniority: DeveloperProfile["seniority"];
 };
 
@@ -152,7 +153,7 @@ export async function saveOwnedDeveloperProfile(email: string, input: DeveloperP
     name: input.name,
     role: input.role,
     location: input.location,
-    avatar: avatarFor(email),
+    avatar: input.avatar || avatarFor(email),
     bio: input.bio,
     salary: input.salary,
     availability: input.availability,
