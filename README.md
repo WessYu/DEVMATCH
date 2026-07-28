@@ -1,165 +1,85 @@
 # DevMatch
 
-Plataforma full stack de recrutamento técnico criada para aproximar empresas e desenvolvedores em um único fluxo de descoberta, compatibilidade, match e conversa.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/WessYu/WessYu/main/readme-assets/DEVMATCH-cover.svg" alt="DevMatch" width="100%" />
+</p>
 
-O projeto separa claramente as experiências de quem contrata e de quem busca uma oportunidade, mantendo informações técnicas, contexto da vaga e mensagens dentro do mesmo produto.
+<p align="center"><strong>Workspace full stack de recrutamento técnico com descoberta, compatibilidade, match e conversa.</strong></p>
 
-## Projeto online
+<p align="center">
+  <a href="https://devmatch-neon.vercel.app">Live Demo</a> ·
+  <a href="https://wessyu-arquivo.vercel.app/">Portfólio</a>
+</p>
 
-- Aplicação: https://devmatch-neon.vercel.app
-- Repositório: https://github.com/WessYu/DEVMATCH
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-111111?style=flat-square&logo=nextdotjs" />
+  <img src="https://img.shields.io/badge/React-19-111111?style=flat-square&logo=react" />
+  <img src="https://img.shields.io/badge/TypeScript-111111?style=flat-square&logo=typescript" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Neon-111111?style=flat-square&logo=postgresql" />
+</p>
 
-## Problema
+## Demo
 
-Processos de contratação técnica costumam espalhar informações entre currículos, portfólios, planilhas, mensagens e plataformas diferentes.
+<p align="center"><img src="https://raw.githubusercontent.com/WessYu/WessYu/main/readme-assets/DEVMATCH-demo.gif" alt="Fluxo animado do DevMatch" width="720" /></p>
 
-O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas podem analisar perfis, filtrar por stack, avaliar compatibilidade, criar matches e iniciar conversas com contexto.
+## Interface
 
-## Perfis da plataforma
+<p align="center"><img src="https://raw.githubusercontent.com/WessYu/WESSYU-ARQUIVO/main/public/projects/devmatch/home.webp" alt="Workspace do DevMatch" width="100%" /></p>
 
-### Empresa
+## Sobre
 
-- publica vagas e conteúdos no feed;
-- pesquisa desenvolvedores por stack e perfil;
-- acompanha candidatos e matches;
-- acessa portfólios e repositórios públicos;
-- inicia conversas vinculadas ao match.
-
-### Desenvolvedor
-
-- cria um perfil técnico;
-- informa stack, senioridade e disponibilidade;
-- adiciona projetos ao portfólio;
-- acompanha oportunidades e matches;
-- conversa com empresas dentro da plataforma.
+O **DevMatch** aproxima empresas e desenvolvedores em um fluxo único. Em vez de separar vaga, perfil técnico, compatibilidade e conversa em ferramentas diferentes, o produto mantém o contexto de contratação dentro do mesmo workspace.
 
 ## Funcionalidades
 
-- cadastro e autenticação para empresas e desenvolvedores;
-- fluxos separados conforme o tipo de perfil;
+- cadastro e autenticação para empresa e desenvolvedor;
+- experiências e navegação diferentes conforme o tipo de perfil;
 - perfis técnicos com stack, senioridade e disponibilidade;
 - portfólio de projetos;
-- leitura de repositórios públicos do GitHub;
 - busca e filtros por tecnologia;
-- cálculo de compatibilidade entre vaga e candidato;
+- cálculo de compatibilidade;
 - matches persistidos;
-- chat associado ao match;
+- chat vinculado ao match;
 - feed com vagas e publicações;
-- persistência em PostgreSQL quando `DATABASE_URL` está configurada;
-- interface responsiva para desktop e dispositivos móveis.
+- persistência PostgreSQL via Neon;
+- layout responsivo.
 
-## Decisões técnicas
+## Stack
 
-### Separação por perfil
+| Área | Tecnologias |
+| --- | --- |
+| Aplicação | Next.js 16, React 19, TypeScript |
+| Interface | Tailwind CSS 4, GSAP, Lucide React |
+| Dados | Neon Serverless PostgreSQL |
+| Qualidade | ESLint, Playwright |
+| Deploy | Vercel |
 
-As áreas de empresa e desenvolvedor possuem navegação, dados e objetivos diferentes. A aplicação organiza esses fluxos em rotas e componentes específicos para reduzir ambiguidades na experiência.
-
-### Match com contexto
-
-As conversas não ficam isoladas. Cada chat é associado a um match, preservando o vínculo entre empresa, candidato e oportunidade.
-
-### Persistência híbrida
-
-A aplicação pode utilizar PostgreSQL por meio do Neon quando as variáveis de ambiente estão configuradas, mantendo a estrutura preparada para uma experiência full stack.
-
-### Interface orientada a workspace
-
-O design utiliza painéis, atalhos, filtros e visões de acompanhamento para aproximar a experiência de uma ferramenta real de recrutamento.
-
-## Tecnologias
-
-### Aplicação
-
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-
-### Dados e interface
-
-- Neon Serverless PostgreSQL
-- GSAP
-- Lucide React
-
-### Qualidade
-
-- ESLint
-- Playwright
-
-## Estrutura principal
+## Estrutura
 
 ```text
 src/
 ├── app/
-│   ├── api/          rotas da aplicação
-│   ├── chat/         conversas vinculadas aos matches
-│   ├── contratante/  workspace da empresa
-│   ├── dev/          área do desenvolvedor
-│   └── feed/         vagas e publicações
-├── components/       componentes reutilizáveis
-└── lib/              regras, dados e integrações
+│   ├── api/
+│   ├── chat/
+│   ├── contratante/
+│   ├── dev/
+│   └── feed/
+├── components/
+└── lib/
 ```
 
-## Execução local
-
-### Requisitos
-
-- Node.js 20 ou superior
-- banco PostgreSQL compatível, caso queira utilizar persistência real
-
-### Instalação
+## Executando localmente
 
 ```bash
 git clone https://github.com/WessYu/DEVMATCH.git
 cd DEVMATCH
 npm install
-```
-
-Crie um arquivo `.env.local` na raiz:
-
-```env
-DATABASE_URL="sua_connection_string_do_neon"
-AUTH_SECRET="um_valor_longo_unico_e_seguro"
-```
-
-Inicie o ambiente de desenvolvimento:
-
-```bash
 npm run dev
 ```
 
-A aplicação ficará disponível em `http://localhost:3000`.
-
-## Scripts
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-npm run test:e2e
-npm run build:pages
-```
-
-## Deploy
-
-A versão full stack pode ser publicada na Vercel com `DATABASE_URL` e `AUTH_SECRET` configuradas.
-
-O comando `build:pages` gera uma versão estática para GitHub Pages, sem os recursos que dependem do servidor e do banco de dados.
-
-## Próximos passos
-
-- notificações em tempo real;
-- painel de métricas para empresas;
-- sistema de candidaturas por vaga;
-- recomendações com base no perfil técnico;
-- upload de currículo;
-- moderação de publicações e perfis.
+Para persistência real, configure `DATABASE_URL` e `AUTH_SECRET` em `.env.local`.
 
 ## Autor
 
-Wesley Cruz
-
-- GitHub: https://github.com/WessYu
-- Portfólio: https://portifoliowess.netlify.app
-- E-mail: wess.c@proton.me
+**Wesley Cruz**  
+[GitHub](https://github.com/WessYu) · [Portfólio](https://wessyu-arquivo.vercel.app/) · [LinkedIn](https://www.linkedin.com/in/wesley-santos-cruz-b57589213/)
