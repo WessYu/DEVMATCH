@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useSyncExternalStore } from "react";
-import { KeyRound, LogOut, ShieldCheck } from "lucide-react";
+import { LogOut, ShieldCheck, UserRound } from "lucide-react";
 import {
   apiBasePath,
   apiPath,
@@ -17,9 +17,13 @@ type AuthPanelProps = {
   onSessionChange: (session: UserSession | null) => void;
 };
 
+function announceSessionChange() {
+  window.dispatchEvent(new Event("devmatch-session-change"));
+}
+
 export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, session }: AuthPanelProps) {
   const [authMode, setAuthMode] = useState<"company" | "developer">(defaultMode);
-  const [authIntent, setAuthIntent] = useState<"signup" | "signin">("signup");
+  const [authIntent, setAuthIntent] = useState<"signup" | "signin">("signin");
   const [authError, setAuthError] = useState("");
   const hydrated = useSyncExternalStore(
     () => () => undefined,
@@ -40,13 +44,13 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
     setAuthPending(true);
 
     if (!email.includes("@")) {
-      setAuthError("Informe um e-mail profissional válido.");
+      setAuthError("Digite um e-mail válido.");
       setAuthPending(false);
       return;
     }
 
     if (password.length < 8) {
-      setAuthError("Use uma senha com pelo menos 8 caracteres.");
+      setAuthError("A senha precisa ter pelo menos 8 caracteres.");
       setAuthPending(false);
       return;
     }
@@ -66,17 +70,18 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       const data = await response.json();
 
       if (!response.ok) {
-        setAuthError(data.error ?? "Não foi possível validar o acesso.");
+        setAuthError(data.error ?? "Não foi possível entrar agora.");
         setAuthPending(false);
         return;
       }
 
       onSessionChange(data.user);
       writeJsonStorage("devmatch-session", data.user);
+      announceSessionChange();
       formElement.reset();
     } catch {
       if (!apiBasePath) {
-        setAuthError("Backend indisponível agora. Confira as variáveis da Vercel.");
+        setAuthError("Não consegui conectar ao servidor. Tente novamente em instantes.");
         setAuthPending(false);
         return;
       }
@@ -88,6 +93,7 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       };
       onSessionChange(user);
       writeJsonStorage("devmatch-session", user);
+      announceSessionChange();
     } finally {
       setAuthPending(false);
     }
@@ -99,28 +105,55 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
       await fetch(apiPath("/api/session"), { method: "DELETE" }).catch(() => undefined);
       onSessionChange(null);
       window.localStorage.removeItem("devmatch-session");
+      announceSessionChange();
     } finally {
       setLoggingOut(false);
     }
   }
 
-  return (
-    <form className="compact-box space-y-2" method="post" onSubmit={handleAuth}>
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-bold">{authIntent === "signup" ? "Criar conta" : "Entrar"}</span>
-        {session ? <ShieldCheck className="size-4" /> : <KeyRound className="size-4" />}
-      </div>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/8 p-1">
-        <button className={`segmented-button ${authIntent === "signup" ? "is-active" : ""}`} onClick={() => setAuthIntent("signup")} type="button">
-          Criar conta
+  if (session) {
+    return (
+      <div className="compact-box flex items-center gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-white/10 text-cyan-100">
+          <UserRound className="size-4" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-black text-white">{session.name}</span>
+          <span className="block truncate text-xs text-slate-400">
+            {session.mode === "company" ? "Conta de empresa" : "Conta de desenvolvedor"}
+          </span>
+        </span>
+        <button aria-label="Sair da conta" className="icon-button min-w-10" disabled={loggingOut} onClick={logout} type="button">
+          <LogOut className="size-4" />
         </button>
+      </div>
+    );
+  }
+
+  const roleLabel = authMode === "company" ? "empresa" : "desenvolvedor";
+
+  return (
+    <form className="compact-box space-y-4" method="post" onSubmit={handleAuth}>
+      <div>
+        <p className="text-sm font-black text-white">{authIntent === "signin" ? "Entrar" : "Criar conta"}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-400">
+          {authIntent === "signin" ? `Acesse sua conta de ${roleLabel}.` : `Crie uma conta de ${roleLabel} para continuar.`}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/8 p-1">
         <button className={`segmented-button ${authIntent === "signin" ? "is-active" : ""}`} onClick={() => setAuthIntent("signin")} type="button">
           Entrar
         </button>
+        <button className={`segmented-button ${authIntent === "signup" ? "is-active" : ""}`} onClick={() => setAuthIntent("signup")} type="button">
+          Criar conta
+        </button>
       </div>
+
       {lockMode ? (
-        <div className="rounded-lg bg-white/8 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-slate-300">
-          {defaultMode === "company" ? "Acesso de contratante" : "Acesso de dev"}
+        <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-black text-slate-200">
+          <ShieldCheck className="size-4 text-cyan-100" />
+          Você está entrando como {authMode === "company" ? "empresa" : "dev"}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-1 rounded-lg bg-white/8 p-1">
@@ -132,25 +165,30 @@ export function AuthPanel({ defaultMode, lockMode = false, onSessionChange, sess
           </button>
         </div>
       )}
-      {authIntent === "signup" ? <input className="light-field" name="name" placeholder="Nome" /> : null}
-      <input className="light-field" name="email" placeholder={authMode === "company" ? "email@empresa.com" : "email@dev.com"} type="email" />
-      <input className="light-field" name="password" placeholder="Senha" type="password" />
+
+      {authIntent === "signup" ? (
+        <label className="block text-xs font-bold text-slate-300">
+          Nome
+          <input className="light-field mt-1.5" name="name" placeholder="Como quer ser chamado" />
+        </label>
+      ) : null}
+
+      <label className="block text-xs font-bold text-slate-300">
+        E-mail
+        <input className="light-field mt-1.5" name="email" placeholder="voce@email.com" type="email" />
+      </label>
+
+      <label className="block text-xs font-bold text-slate-300">
+        Senha
+        <input className="light-field mt-1.5" name="password" placeholder="Mínimo de 8 caracteres" type="password" />
+      </label>
+
       <button className="light-button" disabled={!hydrated || authPending || loggingOut} type="submit">
         <ShieldCheck className="size-4" />
-        {!hydrated ? "Carregando..." : loggingOut ? "Saindo..." : authPending ? "Validando..." : authIntent === "signup" ? "Criar acesso" : "Entrar"}
+        {!hydrated ? "Carregando..." : authPending ? "Entrando..." : authIntent === "signup" ? "Criar minha conta" : "Entrar"}
       </button>
-      {session ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-white/8 px-3 py-2">
-          <span className="min-w-0 text-xs font-bold text-white">
-            <span className="block truncate">{session.name}</span>
-            <span className="block truncate font-semibold text-slate-400">{session.email}</span>
-          </span>
-          <button aria-label="Sair" className="rounded-md bg-white px-2 py-2" disabled={loggingOut} onClick={logout} type="button">
-            <LogOut className="size-4" />
-          </button>
-        </div>
-      ) : null}
-      {authError ? <p className="text-xs font-semibold text-red-700">{authError}</p> : null}
+
+      {authError ? <p className="text-xs font-bold text-red-200">{authError}</p> : null}
     </form>
   );
 }
