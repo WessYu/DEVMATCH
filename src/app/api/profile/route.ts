@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readSessionFromRequest } from "@/lib/auth";
-import { cleanTags, cleanText } from "@/lib/request-guards";
+import { cleanTags, cleanText, cleanUrl } from "@/lib/request-guards";
 import {
   getOwnedDeveloperProfile,
   saveOwnedDeveloperProfile,
@@ -40,6 +40,25 @@ function cleanGithubUsername(value: unknown) {
 
 function cleanSeniority(value: unknown): DeveloperProfileInput["seniority"] {
   return value === "Pleno" || value === "Senior" ? value : "Junior";
+}
+
+function cleanProfileAvatar(value: unknown) {
+  const url = cleanUrl(value);
+  if (!url) {
+    return "";
+  }
+
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    const allowed =
+      hostname === "images.unsplash.com" ||
+      hostname === "media.licdn.com" ||
+      hostname.endsWith(".licdn.com");
+
+    return allowed ? url : "";
+  } catch {
+    return "";
+  }
 }
 
 export async function GET(request: Request) {
@@ -83,6 +102,7 @@ export async function PUT(request: Request) {
     salary: cleanText(payload.salary, 80),
     availability: cleanText(payload.availability, 80),
     github: cleanGithubUsername(payload.github),
+    avatar: cleanProfileAvatar(payload.avatar),
     seniority: cleanSeniority(payload.seniority),
   };
 
