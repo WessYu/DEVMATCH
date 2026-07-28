@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { BriefcaseBusiness, MessageCircle, Send } from "lucide-react";
+import { BriefcaseBusiness, Code2, MessageCircle, Send } from "lucide-react";
 import { apiPath, readJsonStorage, writeJsonStorage, type ChatMessage, type Match } from "@/lib/client-utils";
 
 function messageKey(message: ChatMessage) {
@@ -27,9 +27,12 @@ function mergeMessages(localMessages: ChatMessage[], remoteMessages: ChatMessage
 
 export function ChatArea() {
   const searchParams = useSearchParams();
-  const matches = readJsonStorage<Match[]>("devmatch-matches", []);
   const requestedMatch = searchParams.get("match");
-  const [activeMatchKey, setActiveMatchKey] = useState(requestedMatch || matches[0]?.matchKey || "");
+  const [matches, setMatches] = useState<Match[]>(() => readJsonStorage("devmatch-matches", []));
+  const [sessionMode, setSessionMode] = useState<"company" | "developer" | null>(null);
+  const [activeMatchKey, setActiveMatchKey] = useState(
+    requestedMatch || readJsonStorage<Match[]>("devmatch-matches", [])[0]?.matchKey || "",
+  );
   const [draft, setDraft] = useState("");
   const [status, setStatus] = useState("");
   const [chatByMatch, setChatByMatch] = useState<Record<string, ChatMessage[]>>(() =>
@@ -40,6 +43,9 @@ export function ChatArea() {
   const currentMatchKey = activeMatch?.matchKey ?? "";
   const activeChat = currentMatchKey ? chatByMatch[currentMatchKey] ?? [] : [];
   const groupedChat = activeChat.slice(-40);
+  const backHref = sessionMode === "developer" ? "/dev" : "/contratante";
+  const backLabel = sessionMode === "developer" ? "Voltar ao perfil" : "Buscar mais perfis";
+  const BackIcon = sessionMode === "developer" ? Code2 : BriefcaseBusiness;
 
   function persistChat(matchKey: string, messages: ChatMessage[]) {
     const nextState = {
@@ -50,6 +56,35 @@ export function ChatArea() {
     setChatByMatch(nextState);
     writeJsonStorage("devmatch-chat", nextState);
   }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMatches() {
+      try {
+        const response = await fetch(apiPath("/api/matches"), { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data.matches) || cancelled) {
+          return;
+        }
+
+        const remoteMatches = data.matches as Match[];
+        setMatches(remoteMatches);
+        writeJsonStorage("devmatch-matches", remoteMatches);
+        setSessionMode(data.mode === "developer" ? "developer" : "company");
+        setActiveMatchKey((current) => current || requestedMatch || remoteMatches[0]?.matchKey || "");
+      } catch {
+        // A versão estática e ambientes sem API continuam usando o cache local.
+      }
+    }
+
+    loadMatches().catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requestedMatch]);
 
   useEffect(() => {
     if (!currentMatchKey) {
@@ -127,6 +162,11 @@ export function ChatArea() {
         <div className="border-b border-white/10 p-3">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Conversas</p>
           <h1 className="mt-1 text-2xl font-black text-white">Matches ativos</h1>
+          {sessionMode ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Sincronizado como {sessionMode === "developer" ? "dev" : "contratante"}.
+            </p>
+          ) : null}
         </div>
         <div className="mt-3 space-y-2">
           {matches.map((match) => (
@@ -139,9 +179,9 @@ export function ChatArea() {
             </button>
           ))}
         </div>
-        <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-3 text-sm font-black text-cyan-100" href="/contratante">
-          <BriefcaseBusiness className="size-4" />
-          Buscar mais perfis
+        <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-3 text-sm font-black text-cyan-100" href={backHref}>
+          <BackIcon className="size-4" />
+          {backLabel}
         </Link>
       </aside>
 
@@ -195,7 +235,14 @@ export function ChatArea() {
           </>
         ) : (
           <div className="grid flex-1 place-items-center p-8 text-center">
-            <p className="text-sm text-slate-400">Ainda não há matches para conversar.</p>
+            <div>
+              <MessageCircle className="mx-auto size-8 text-cyan-100" />
+              <p className="mt-3 text-sm text-slate-400">Ainda não há matches para conversar.</p>
+              <Link className="mt-4 inline-flex items-center gap-2 text-sm font-black text-cyan-100" href={backHref}>
+                <BackIcon className="size-4" />
+                {backLabel}
+              </Link>
+            </div>
           </div>
         )}
       </section>
