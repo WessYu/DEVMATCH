@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BriefcaseBusiness, Code2, LockKeyhole } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, Code2 } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { apiBasePath, apiPath, readJsonStorage, type UserSession } from "@/lib/client-utils";
 
@@ -17,15 +17,17 @@ type RoleGateProps = {
 
 const roleCopy = {
   company: {
-    label: "contratante",
+    label: "empresa",
+    destination: "Encontrar devs",
     oppositeHref: "/dev",
-    oppositeLabel: "Ir para área do dev",
+    oppositeLabel: "Ir para meu perfil de dev",
     icon: BriefcaseBusiness,
   },
   developer: {
     label: "dev",
+    destination: "Meu perfil",
     oppositeHref: "/contratante",
-    oppositeLabel: "Ir para área do contratante",
+    oppositeLabel: "Ir para área da empresa",
     icon: Code2,
   },
 };
@@ -48,9 +50,7 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
       try {
         const response = await fetch(apiPath("/api/session"), { cache: "no-store" });
 
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         if (response.ok) {
           const data = await response.json();
@@ -63,16 +63,13 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
           window.localStorage.removeItem("devmatch-session");
         }
       } catch {
-        // GitHub Pages has no API runtime; the static build uses local session state.
+        // A build estática pode continuar usando a sessão local.
       } finally {
-        if (active) {
-          setChecked(true);
-        }
+        if (active) setChecked(true);
       }
     }
 
     restoreSession();
-
     return () => {
       active = false;
     };
@@ -82,37 +79,42 @@ export function RoleGate({ children, mode, onSessionChange, session, text, title
     return <>{children}</>;
   }
 
+  const wrongRole = checked && session && session.mode !== mode;
+
   return (
-    <section className="role-gate product-frame">
+    <section className="role-gate role-gate-simple product-frame">
       <div className="role-gate-copy">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-black text-slate-200">
           <Icon className="size-4" />
-          Acesso restrito
+          {copy.destination}
         </div>
-        <h1 className="mt-8 text-5xl font-black leading-[0.92] text-white">{title}</h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-slate-300">{text}</p>
-        <div className="mt-8 grid gap-2 rounded-xl border border-white/10 bg-white/8 p-3">
-          <div className="flex items-center gap-2 text-sm font-black text-white">
-            <LockKeyhole className="size-4" />
-            Entre como {copy.label} para ver esta área.
+
+        <h1 className="mt-6 text-4xl font-black leading-[0.96] text-white sm:text-5xl">
+          {wrongRole ? "Você já está conectado." : title}
+        </h1>
+        <p className="mt-4 max-w-lg text-base leading-7 text-slate-300">
+          {wrongRole
+            ? `Esta conta é de ${session?.mode === "company" ? "empresa" : "dev"}. Você não precisa entrar de novo.`
+            : text}
+        </p>
+
+        {!wrongRole ? (
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.05] p-4">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-cyan-300 text-xs font-black text-[#111111]">1</span>
+            <span>
+              <span className="block text-sm font-black text-white">Entre ou crie sua conta</span>
+              <span className="mt-1 block text-xs leading-5 text-slate-400">Depois disso você vai direto para {copy.destination.toLowerCase()}.</span>
+            </span>
           </div>
-          {session ? (
-            <p className="text-sm leading-6 text-slate-300">
-              Sua sessão atual é de {session.mode === "company" ? "contratante" : "dev"}. Use a área correta ou saia para trocar o tipo de acesso.
-            </p>
-          ) : (
-            <p className="text-sm leading-6 text-slate-300">
-              {checked ? "Nenhuma sessão válida encontrada." : "Verificando sessão..."}
-            </p>
-          )}
-        </div>
+        ) : null}
       </div>
 
       <div className="role-gate-panel">
         <AuthPanel defaultMode={mode} lockMode onSessionChange={onSessionChange} session={session} />
-        {session && session.mode !== mode ? (
-          <Link className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-white/10 px-3 py-3 text-sm font-black text-cyan-100" href={copy.oppositeHref}>
+        {wrongRole ? (
+          <Link className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-3 py-3 text-sm font-black text-[#111111]" href={copy.oppositeHref}>
             {copy.oppositeLabel}
+            <ArrowRight className="size-4" />
           </Link>
         ) : null}
       </div>
