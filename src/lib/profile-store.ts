@@ -23,6 +23,12 @@ export type DeveloperProfileInput = {
 
 type StoredDeveloperProfileRow = DeveloperProfile;
 
+type DeveloperMatchRow = StoredDeveloperProfileRow & {
+  match_key: string;
+  company_email: string;
+  company_name: string;
+};
+
 let profileSqlClient: NeonQueryFunction<false, false> | null = null;
 let ownershipSchemaReady: Promise<void> | null = null;
 
@@ -213,5 +219,97 @@ export async function saveOwnedDeveloperProfile(email: string, input: DeveloperP
       signals = excluded.signals
   `;
 
+  await sql`
+    update devmatch_matches
+    set developer_email = ${email}
+    where developer_id = ${profile.id}
+      and (developer_email is null or developer_email <> ${email})
+  `;
+
   return enrichProfile(profile);
+}
+
+export async function linkDeveloperOwnersToCompanyMatches(companyEmail: string) {
+  const sql = getSql();
+
+  if (!sql) {
+    return;
+  }
+
+  await ensureOwnershipSchema();
+  await sql`
+    update devmatch_matches as matches
+    set developer_email = profiles.owner_email
+    from devmatch_profiles as profiles
+    where matches.company_email = ${companyEmail}
+      and matches.developer_id = profiles.id
+      and profiles.owner_email is not null
+      and (
+        matches.developer_email is null
+        or matches.developer_email <> profiles.owner_email
+      )
+  `;
+}
+
+export async function getMatchesForDeveloper(email: string) {
+  const sql = getSql();
+
+  if (!sql) {
+    return [];
+  }
+
+  await ensureOwnershipSchema();
+
+  const rows = await sql`
+    select
+      matches.id::text as match_key,
+      matches.company_email,
+      coalesce(users.name, split_part(matches.company_email, '@', 1)) as company_name,
+      profiles.id,
+      profiles.name,
+      profiles.role,
+      profiles.location,
+      profiles.avatar,
+      profiles.bio,
+      profiles.salary,
+      profiles.availability,
+      profiles.github,
+      profiles.seniority,
+      profiles.stack,
+      profiles.projects,
+      profiles.signals
+    from devmatch_matches as matches
+    join devmatch_profiles as profiles on profiles.id = matches.developer_id
+    left join devmatch_users as users on users.email = matches.company_email
+    where matches.developer_email = ${email}
+       or profiles.owner_email = ${email}
+    order by matches.created_at desc
+  ` as DeveloperMatchRow[];
+
+  return rows.map((row) => {
+    const profile: DeveloperProfile = {
+      id: row.id,
+      name: row.name,
+      role: row.role,
+      location: row.location,
+      avatar: row.avatar,
+      bio: row.bio,
+      salary: row.salary,
+      availability: row.availability,
+      github: row.github,
+      seniority: row.seniority,
+      stack: row.stack,
+      projects: row.projects,
+      signals: row.signals,
+    };
+
+    return {
+      id: row.id,
+      matchKey: row.match_key,
+      name: row.company_name,
+      role: companyProfile.role,
+      avatar: avatarFor(row.company_email),
+      compatibility: scoreDeveloper(profile, companyProfile),
+    };
+  });
 }
