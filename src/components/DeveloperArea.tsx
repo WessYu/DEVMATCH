@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { GitPullRequest, MessageCircle, Save, Search, ShieldCheck } from "lucide-react";
+import { GitPullRequest, Link2, MessageCircle, Save, Search, ShieldCheck } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { DarkPanel } from "@/components/DarkPanel";
 import { RoleGate } from "@/components/RoleGate";
@@ -17,6 +18,8 @@ type PortfolioState = {
   project: string;
   salary: string;
   availability: string;
+  avatar: string;
+  seniority: "Junior" | "Pleno" | "Senior";
 };
 
 type GitHubRepo = {
@@ -28,6 +31,27 @@ type GitHubRepo = {
   updatedAt: string;
 };
 
+type SyncedDeveloperProfile = {
+  name: string;
+  role: string;
+  location: string;
+  avatar: string;
+  bio: string;
+  salary: string;
+  availability: string;
+  github: string;
+  seniority: PortfolioState["seniority"];
+  stack: string[];
+  projects: { description: string }[];
+};
+
+type LinkedInImportedProfile = {
+  name: string;
+  headline: string;
+  picture: string;
+  email: string;
+};
+
 const initialPortfolio: PortfolioState = {
   name: "Seu nome",
   role: "Front-end Engineer",
@@ -37,6 +61,18 @@ const initialPortfolio: PortfolioState = {
   project: "Projeto principal com link, stack, problema resolvido e decisão técnica relevante.",
   salary: "A combinar",
   availability: "30 dias",
+  avatar: "",
+  seniority: "Junior",
+};
+
+const linkedInMessages: Record<string, string> = {
+  "not-configured": "A integração está pronta no código, mas ainda faltam as credenciais do app LinkedIn no servidor.",
+  cancelled: "A autorização do LinkedIn foi cancelada. Nenhuma informação foi importada.",
+  "invalid-state": "A autorização expirou ou não pôde ser validada. Tente conectar novamente.",
+  "token-error": "O LinkedIn não liberou o acesso ao perfil. Confira as permissões do app e tente novamente.",
+  "profile-error": "A autorização funcionou, mas o LinkedIn não retornou o perfil esperado.",
+  unavailable: "O LinkedIn está indisponível agora. Você pode continuar preenchendo o perfil manualmente.",
+  "login-required": "Entre com uma conta de desenvolvedor antes de conectar o LinkedIn.",
 };
 
 export function DeveloperArea() {
@@ -45,24 +81,174 @@ export function DeveloperArea() {
   const [githubUser, setGithubUser] = useState("vercel");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [githubStatus, setGithubStatus] = useState("Busque seu usuário para puxar repositórios recentes.");
+  const [linkedinStatus, setLinkedinStatus] = useState("Importe nome, foto e dados básicos autorizados pelo LinkedIn e revise tudo antes de publicar.");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("Alterações ficam locais até você publicar o perfil.");
 
   useEffect(() => {
     writeJsonStorage("devmatch-portfolio", portfolio);
   }, [portfolio]);
 
-  function updateField(field: keyof PortfolioState, value: string) {
+  useEffect(() => {
+    if (session?.mode !== "developer") {
+      return;
+    }
+
+    let active = true;
+
+    async function hydrateProfile() {
+      try {
+        const response = await fetch(apiPath("/api/profile"), { cache: "no-store" });
+        const data = await response.json();
+
+        if (response.ok && active) {
+          const profile = data.profile as SyncedDeveloperProfile | null;
+
+          if (profile) {
+            const nextPortfolio: PortfolioState = {
+              name: profile.name,
+              role: profile.role,
+              location: profile.location,
+              avatar: profile.avatar,
+              bio: profile.bio,
+              skills: profile.stack.join(", "),
+              project: profile.projects[0]?.description ?? initialPortfolio.project,
+              salary: profile.salary,
+              availability: profile.availability,
+              seniority: profile.seniority,
+            };
+
+            setPortfolio(nextPortfolio);
+            writeJsonStorage("devmatch-portfolio", nextPortfolio);
+            setGithubUser(profile.github || "vercel");
+            setSaved(true);
+            setSyncStatus("Perfil sincronizado com o Neon e visível para contratantes.");
+          } else {
+            setSyncStatus("Esta conta ainda não tem um perfil publicado no backend.");
+          }
+        }
+      } catch {
+        if (active) {
+          setSyncStatus("Backend indisponível; seu rascunho local continua seguro neste navegador.");
+        }
+      }
+
+      if (!active || typeof window === "undefined") {
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const linkedInResult = params.get("linkedin");
+
+      if (!linkedInResult) {
+        return;
+      }
+
+      if (linkedInResult !== "imported") {
+        setLinkedinStatus(linkedInMessages[linkedInResult] ?? "Não foi possível concluir a importação do LinkedIn.");
+        params.delete("linkedin");
+        const query = params.toString();
+        window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+        return;
+      }
+
+      try {
+        const importResponse = await fetch(apiPath("/api/linkedin/import"), { cache: "no-store" });
+        const importData = await importResponse.json();
+        const imported = importData.imported as LinkedInImportedProfile | null;
+
+        if (!importResponse.ok || !imported || !active) {
+          setLinkedinStatus("O LinkedIn autorizou o acesso, mas os dados temporários expiraram. Conecte novamente.");
+          return;
+        }
+
+        setPortfolio((current) => ({
+          ...current,
+          name: imported.name || current.name,
+          role: imported.headline || current.role,
+          avatar: imported.picture || current.avatar,
+        }));
+        setSaved(false);
+        setSyncStatus("Dados do LinkedIn importados. Revise o perfil e publique quando estiver pronto.");
+        setLinkedinStatus(
+          imported.email
+            ? `LinkedIn importado com sucesso (${imported.email}). O e-mail é usado apenas nesta confirmação e não aparece no card.`
+            : "LinkedIn importado com sucesso. Revise os campos antes de publicar.",
+        );
+      } catch {
+        setLinkedinStatus("A importação foi autorizada, mas não consegui aplicar os dados ao formulário agora.");
+      } finally {
+        params.delete("linkedin");
+        const query = params.toString();
+        window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+      }
+    }
+
+    hydrateProfile().catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [session?.email, session?.mode]);
+
+  function updateField<K extends keyof PortfolioState>(field: K, value: PortfolioState[K]) {
     setPortfolio((current) => ({
       ...current,
       [field]: value,
     }));
     setSaved(false);
+    setSyncStatus("Existem alterações ainda não publicadas.");
   }
 
-  function savePortfolio(event: FormEvent<HTMLFormElement>) {
+  function updateGithubUser(value: string) {
+    setGithubUser(value);
+    setSaved(false);
+    setSyncStatus("Existem alterações ainda não publicadas.");
+  }
+
+  async function savePortfolio(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     writeJsonStorage("devmatch-portfolio", portfolio);
-    setSaved(true);
+    setSaving(true);
+    setSaved(false);
+
+    if (session?.mode !== "developer") {
+      setSaved(true);
+      setSaving(false);
+      setSyncStatus("Perfil salvo apenas neste navegador. Entre como dev para publicá-lo.");
+      return;
+    }
+
+    try {
+      const response = await fetch(apiPath("/api/profile"), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...portfolio,
+          github: githubUser,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSyncStatus(data.error ?? "Não foi possível publicar seu perfil agora.");
+        return;
+      }
+
+      if (!data.persisted) {
+        setSaved(true);
+        setSyncStatus("Rascunho salvo localmente. Configure DATABASE_URL para publicar na triagem.");
+        return;
+      }
+
+      setSaved(true);
+      setSyncStatus("Perfil publicado: ele já pode aparecer na triagem dos contratantes.");
+    } catch {
+      setSyncStatus("Backend indisponível; o rascunho continua salvo neste navegador.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function fetchGithub() {
@@ -100,14 +286,25 @@ export function DeveloperArea() {
           <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Console do dev</p>
           <h1 className="text-4xl font-black leading-[0.96]">Perfil técnico pronto para triagem.</h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
-            Mantenha bio, stack, projeto principal e repositórios organizados para conversas de contratação.
+            Importe o básico do LinkedIn, complemente com GitHub e projetos e publique um perfil técnico pronto para avaliação.
           </p>
         </section>
         <AuthPanel defaultMode="developer" lockMode onSessionChange={setSession} session={session} />
+        <DarkPanel title="Importação rápida" icon={<Link2 className="size-5" />}>
+          <a className="light-button w-full justify-center" href={apiPath("/api/linkedin/start")}>
+            <Link2 className="size-4" />
+            Importar do LinkedIn
+          </a>
+          <p className="mt-3 text-xs leading-5 text-slate-400">{linkedinStatus}</p>
+          <p className="mt-2 text-[11px] leading-5 text-slate-500">
+            O DevMatch usa OAuth oficial, não faz scraping e não mantém o access token depois da importação.
+          </p>
+        </DarkPanel>
         <DarkPanel title="Status público" icon={<ShieldCheck className="size-5" />}>
           <div className="space-y-2 text-sm text-slate-300">
             <p>{session ? `Logado como ${session.name}` : "Entre ou crie uma conta dev."}</p>
-            <p>{saved ? "Perfil salvo neste navegador." : "Alterações são salvas automaticamente e podem ser fixadas no botão salvar."}</p>
+            <p>{syncStatus}</p>
+            {saved ? <p className="font-bold text-cyan-100">Última versão salva.</p> : null}
           </div>
         </DarkPanel>
       </aside>
@@ -120,21 +317,45 @@ export function DeveloperArea() {
               <input className="field" onChange={(event) => updateField("role", event.target.value)} value={portfolio.role} />
               <input className="field" onChange={(event) => updateField("location", event.target.value)} value={portfolio.location} />
               <input className="field" onChange={(event) => updateField("availability", event.target.value)} value={portfolio.availability} />
+              <select
+                className="field md:col-span-2"
+                onChange={(event) => updateField("seniority", event.target.value as PortfolioState["seniority"])}
+                value={portfolio.seniority}
+              >
+                <option value="Junior">Junior</option>
+                <option value="Pleno">Pleno</option>
+                <option value="Senior">Senior</option>
+              </select>
             </div>
             <textarea className="field min-h-32 resize-none" onChange={(event) => updateField("bio", event.target.value)} value={portfolio.bio} />
             <input className="field" onChange={(event) => updateField("skills", event.target.value)} value={portfolio.skills} />
             <input className="field" onChange={(event) => updateField("project", event.target.value)} value={portfolio.project} />
             <input className="field" onChange={(event) => updateField("salary", event.target.value)} value={portfolio.salary} />
-            <button className="light-button w-auto px-5" type="submit">
+            <button className="light-button w-auto px-5" disabled={saving} type="submit">
               <Save className="size-4" />
-              Salvar perfil
+              {saving ? "Publicando..." : "Salvar e publicar perfil"}
             </button>
           </div>
 
           <aside className="rounded-xl border border-white/10 bg-black/20 p-4">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Preview</p>
+            {portfolio.avatar ? (
+              <Image
+                alt={`Foto de ${portfolio.name}`}
+                className="mt-3 size-20 rounded-2xl object-cover"
+                height={80}
+                src={portfolio.avatar}
+                unoptimized
+                width={80}
+              />
+            ) : null}
             <h2 className="mt-3 text-3xl font-black text-white">{portfolio.name}</h2>
             <p className="mt-1 text-sm font-bold text-cyan-100">{portfolio.role}</p>
+            <div className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-400">
+              <span>{portfolio.seniority}</span>
+              <span>•</span>
+              <span>{portfolio.location}</span>
+            </div>
             <p className="mt-3 text-sm leading-6 text-slate-300">{portfolio.bio}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {skills.map((skill) => (
@@ -158,13 +379,14 @@ export function DeveloperArea() {
       <div className="xl:col-span-2">
         <DarkPanel title="GitHub conectado" icon={<GitPullRequest className="size-5" />}>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input className="field" onChange={(event) => setGithubUser(event.target.value)} placeholder="usuário" value={githubUser} />
+            <input className="field" onChange={(event) => updateGithubUser(event.target.value)} placeholder="usuário" value={githubUser} />
             <button className="icon-button sm:min-w-32" onClick={fetchGithub} type="button">
               <Search className="size-4" />
               Buscar
             </button>
           </div>
           <p className="mt-3 text-sm text-slate-400">{githubStatus}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Ao publicar o perfil, este usuário também vira o link principal de portfólio no card do contratante.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {repos.slice(0, 6).map((repo) => (
               <a className="repo-row min-h-24 items-start" href={repo.url} key={repo.url} rel="noreferrer" target="_blank">
