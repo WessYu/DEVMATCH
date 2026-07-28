@@ -28,6 +28,7 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 ### Desenvolvedor
 
 - cria um perfil técnico;
+- pode importar dados básicos autorizados pelo LinkedIn;
 - informa stack, senioridade e disponibilidade;
 - adiciona projetos ao portfólio;
 - publica o perfil no backend para entrar na triagem dos contratantes;
@@ -38,6 +39,9 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 
 - cadastro e autenticação para empresas e desenvolvedores;
 - fluxos separados conforme o tipo de perfil;
+- integração oficial com LinkedIn via OAuth 2.0 / OpenID Connect;
+- importação temporária de nome, foto, e-mail e demais claims disponibilizados pela permissão `profile`;
+- access token do LinkedIn usado apenas no servidor e não persistido pelo DevMatch;
 - perfis técnicos com stack, senioridade e disponibilidade;
 - publicação autenticada de perfis de desenvolvedor no Neon;
 - vínculo de cada perfil publicado à conta dona sem expor o e-mail no identificador público;
@@ -58,6 +62,14 @@ O DevMatch foi criado para concentrar essas etapas em um workspace onde empresas
 ### Separação por perfil
 
 As áreas de empresa e desenvolvedor possuem navegação, dados e objetivos diferentes. A aplicação organiza esses fluxos em rotas e componentes específicos para reduzir ambiguidades na experiência.
+
+### Importação segura do LinkedIn
+
+A integração usa o produto **Sign in with LinkedIn using OpenID Connect** com os escopos `openid profile email`. O DevMatch inicia o fluxo com `state` aleatório, troca o authorization code no servidor e consulta o endpoint `userinfo` com o access token recebido.
+
+O token não é armazenado em banco nem enviado ao navegador. Os dados retornados são colocados em um cookie temporário `HttpOnly`, assinado com `AUTH_SECRET`, consumidos pela área do dev e removidos logo depois. O usuário sempre revisa o formulário antes de publicar.
+
+A disponibilidade exata de claims depende do que o LinkedIn devolver para a aplicação e para a conta autorizada. Campos ausentes não substituem dados já preenchidos no DevMatch.
 
 ### Perfil publicado com ownership
 
@@ -91,6 +103,7 @@ O design utiliza painéis, atalhos, filtros e visões de acompanhamento para apr
 ### Dados e interface
 
 - Neon Serverless PostgreSQL
+- LinkedIn OAuth 2.0 / OpenID Connect
 - GSAP
 - Lucide React
 
@@ -120,6 +133,10 @@ Conta dev autenticada
         ↓
 Área /dev
         ↓
+LinkedIn OIDC (opcional)
+        ↓
+Revisão dos dados importados
+        ↓
 PUT /api/profile
         ↓
 Neon / devmatch_profiles
@@ -145,6 +162,7 @@ Os perfis demo continuam existindo como seed. Perfis publicados por contas reais
 
 - Node.js 20 ou superior
 - banco PostgreSQL compatível, caso queira utilizar persistência real
+- app no LinkedIn Developer Portal, caso queira testar a importação do LinkedIn
 
 ### Instalação
 
@@ -159,7 +177,12 @@ Crie um arquivo `.env.local` na raiz:
 ```env
 DATABASE_URL="sua_connection_string_do_neon"
 AUTH_SECRET="um_valor_longo_unico_e_seguro"
+LINKEDIN_CLIENT_ID="client_id_do_linkedin"
+LINKEDIN_CLIENT_SECRET="client_secret_do_linkedin"
+LINKEDIN_REDIRECT_URI="http://localhost:3000/api/linkedin/callback"
 ```
+
+No LinkedIn Developer Portal, habilite o produto **Sign in with LinkedIn using OpenID Connect** e cadastre a mesma redirect URL configurada no ambiente.
 
 Inicie o ambiente de desenvolvimento:
 
@@ -182,7 +205,7 @@ npm run build:pages
 
 ## Deploy
 
-A versão full stack pode ser publicada na Vercel com `DATABASE_URL` e `AUTH_SECRET` configuradas.
+A versão full stack pode ser publicada na Vercel com `DATABASE_URL` e `AUTH_SECRET` configuradas. Para a integração do LinkedIn, configure também `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` e `LINKEDIN_REDIRECT_URI` com a URL de produção cadastrada no LinkedIn Developer Portal.
 
 O comando `build:pages` gera uma versão estática para GitHub Pages, sem os recursos que dependem do servidor e do banco de dados.
 
@@ -192,7 +215,7 @@ O comando `build:pages` gera uma versão estática para GitHub Pages, sem os rec
 - painel de métricas para empresas;
 - sistema de candidaturas por vaga;
 - recomendações com base no perfil técnico;
-- upload de currículo e foto de perfil;
+- importação de currículo;
 - vaga ativa configurável por empresa em vez do perfil estático atual;
 - moderação de publicações e perfis.
 
