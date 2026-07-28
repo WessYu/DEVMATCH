@@ -17,6 +17,7 @@ type PortfolioState = {
   project: string;
   salary: string;
   availability: string;
+  seniority: "Junior" | "Pleno" | "Senior";
 };
 
 type GitHubRepo = {
@@ -28,6 +29,19 @@ type GitHubRepo = {
   updatedAt: string;
 };
 
+type SyncedDeveloperProfile = {
+  name: string;
+  role: string;
+  location: string;
+  bio: string;
+  salary: string;
+  availability: string;
+  github: string;
+  seniority: PortfolioState["seniority"];
+  stack: string[];
+  projects: { description: string }[];
+};
+
 const initialPortfolio: PortfolioState = {
   name: "Seu nome",
   role: "Front-end Engineer",
@@ -37,6 +51,7 @@ const initialPortfolio: PortfolioState = {
   project: "Projeto principal com link, stack, problema resolvido e decisão técnica relevante.",
   salary: "A combinar",
   availability: "30 dias",
+  seniority: "Junior",
 };
 
 export function DeveloperArea() {
@@ -46,23 +61,124 @@ export function DeveloperArea() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [githubStatus, setGithubStatus] = useState("Busque seu usuário para puxar repositórios recentes.");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("Alterações ficam locais até você publicar o perfil.");
 
   useEffect(() => {
     writeJsonStorage("devmatch-portfolio", portfolio);
   }, [portfolio]);
 
-  function updateField(field: keyof PortfolioState, value: string) {
+  useEffect(() => {
+    if (session?.mode !== "developer") {
+      return;
+    }
+
+    let active = true;
+
+    async function loadPublishedProfile() {
+      try {
+        const response = await fetch(apiPath("/api/profile"), { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !active) {
+          return;
+        }
+
+        const profile = data.profile as SyncedDeveloperProfile | null;
+
+        if (!profile) {
+          setSyncStatus("Esta conta ainda não tem um perfil publicado no backend.");
+          return;
+        }
+
+        const nextPortfolio: PortfolioState = {
+          name: profile.name,
+          role: profile.role,
+          location: profile.location,
+          bio: profile.bio,
+          skills: profile.stack.join(", "),
+          project: profile.projects[0]?.description ?? initialPortfolio.project,
+          salary: profile.salary,
+          availability: profile.availability,
+          seniority: profile.seniority,
+        };
+
+        setPortfolio(nextPortfolio);
+        writeJsonStorage("devmatch-portfolio", nextPortfolio);
+        setGithubUser(profile.github || "vercel");
+        setSaved(true);
+        setSyncStatus("Perfil sincronizado com o Neon e visível para contratantes.");
+      } catch {
+        if (active) {
+          setSyncStatus("Backend indisponível; seu rascunho local continua seguro neste navegador.");
+        }
+      }
+    }
+
+    loadPublishedProfile().catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [session?.email, session?.mode]);
+
+  function updateField<K extends keyof PortfolioState>(field: K, value: PortfolioState[K]) {
     setPortfolio((current) => ({
       ...current,
       [field]: value,
     }));
     setSaved(false);
+    setSyncStatus("Existem alterações ainda não publicadas.");
   }
 
-  function savePortfolio(event: FormEvent<HTMLFormElement>) {
+  function updateGithubUser(value: string) {
+    setGithubUser(value);
+    setSaved(false);
+    setSyncStatus("Existem alterações ainda não publicadas.");
+  }
+
+  async function savePortfolio(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     writeJsonStorage("devmatch-portfolio", portfolio);
-    setSaved(true);
+    setSaving(true);
+    setSaved(false);
+
+    if (session?.mode !== "developer") {
+      setSaved(true);
+      setSaving(false);
+      setSyncStatus("Perfil salvo apenas neste navegador. Entre como dev para publicá-lo.");
+      return;
+    }
+
+    try {
+      const response = await fetch(apiPath("/api/profile"), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...portfolio,
+          github: githubUser,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSyncStatus(data.error ?? "Não foi possível publicar seu perfil agora.");
+        return;
+      }
+
+      if (!data.persisted) {
+        setSaved(true);
+        setSyncStatus("Rascunho salvo localmente. Configure DATABASE_URL para publicar na triagem.");
+        return;
+      }
+
+      setSaved(true);
+      setSyncStatus("Perfil publicado: ele já pode aparecer na triagem dos contratantes.");
+    } catch {
+      setSyncStatus("Backend indisponível; o rascunho continua salvo neste navegador.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function fetchGithub() {
@@ -107,7 +223,8 @@ export function DeveloperArea() {
         <DarkPanel title="Status público" icon={<ShieldCheck className="size-5" />}>
           <div className="space-y-2 text-sm text-slate-300">
             <p>{session ? `Logado como ${session.name}` : "Entre ou crie uma conta dev."}</p>
-            <p>{saved ? "Perfil salvo neste navegador." : "Alterações são salvas automaticamente e podem ser fixadas no botão salvar."}</p>
+            <p>{syncStatus}</p>
+            {saved ? <p className="font-bold text-cyan-100">Última versão salva.</p> : null}
           </div>
         </DarkPanel>
       </aside>
@@ -120,14 +237,23 @@ export function DeveloperArea() {
               <input className="field" onChange={(event) => updateField("role", event.target.value)} value={portfolio.role} />
               <input className="field" onChange={(event) => updateField("location", event.target.value)} value={portfolio.location} />
               <input className="field" onChange={(event) => updateField("availability", event.target.value)} value={portfolio.availability} />
+              <select
+                className="field md:col-span-2"
+                onChange={(event) => updateField("seniority", event.target.value as PortfolioState["seniority"])}
+                value={portfolio.seniority}
+              >
+                <option value="Junior">Junior</option>
+                <option value="Pleno">Pleno</option>
+                <option value="Senior">Senior</option>
+              </select>
             </div>
             <textarea className="field min-h-32 resize-none" onChange={(event) => updateField("bio", event.target.value)} value={portfolio.bio} />
             <input className="field" onChange={(event) => updateField("skills", event.target.value)} value={portfolio.skills} />
             <input className="field" onChange={(event) => updateField("project", event.target.value)} value={portfolio.project} />
             <input className="field" onChange={(event) => updateField("salary", event.target.value)} value={portfolio.salary} />
-            <button className="light-button w-auto px-5" type="submit">
+            <button className="light-button w-auto px-5" disabled={saving} type="submit">
               <Save className="size-4" />
-              Salvar perfil
+              {saving ? "Publicando..." : "Salvar e publicar perfil"}
             </button>
           </div>
 
@@ -135,6 +261,11 @@ export function DeveloperArea() {
             <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Preview</p>
             <h2 className="mt-3 text-3xl font-black text-white">{portfolio.name}</h2>
             <p className="mt-1 text-sm font-bold text-cyan-100">{portfolio.role}</p>
+            <div className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-400">
+              <span>{portfolio.seniority}</span>
+              <span>•</span>
+              <span>{portfolio.location}</span>
+            </div>
             <p className="mt-3 text-sm leading-6 text-slate-300">{portfolio.bio}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {skills.map((skill) => (
@@ -158,13 +289,14 @@ export function DeveloperArea() {
       <div className="xl:col-span-2">
         <DarkPanel title="GitHub conectado" icon={<GitPullRequest className="size-5" />}>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input className="field" onChange={(event) => setGithubUser(event.target.value)} placeholder="usuário" value={githubUser} />
+            <input className="field" onChange={(event) => updateGithubUser(event.target.value)} placeholder="usuário" value={githubUser} />
             <button className="icon-button sm:min-w-32" onClick={fetchGithub} type="button">
               <Search className="size-4" />
               Buscar
             </button>
           </div>
           <p className="mt-3 text-sm text-slate-400">{githubStatus}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Ao publicar o perfil, este usuário também vira o link principal de portfólio no card do contratante.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {repos.slice(0, 6).map((repo) => (
               <a className="repo-row min-h-24 items-start" href={repo.url} key={repo.url} rel="noreferrer" target="_blank">
