@@ -103,7 +103,8 @@ function normalizeJobType(value: string) {
     temporary: "Temporário",
   };
 
-  return labels[value] ?? value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) || "Não informado";
+  const fallback = value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()).trim();
+  return labels[value] ?? fallback || "Não informado";
 }
 
 function extractTags(job: RemotiveJob, description: string) {
