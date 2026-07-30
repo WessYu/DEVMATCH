@@ -4,7 +4,7 @@ import { type CSSProperties, type PointerEvent, useEffect, useMemo, useRef, useS
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
-import { BadgeCheck, BriefcaseBusiness, Heart, MessageCircle, X } from "lucide-react";
+import { BadgeCheck, BriefcaseBusiness, Clock3, Heart, MapPin, MessageCircle, RotateCcw, X } from "lucide-react";
 import { AuthPanel } from "@/components/AuthPanel";
 import { DarkPanel } from "@/components/DarkPanel";
 import { RoleGate } from "@/components/RoleGate";
@@ -22,22 +22,32 @@ import { companyProfile, stackOptions } from "@/lib/devmatch-data";
 const swipeThreshold = 108;
 const swipeExitDistance = 560;
 
+type LastDecision = {
+  id: string;
+  name: string;
+  kind: "like" | "pass";
+} | null;
+
 export function ContractorArea() {
   const [profiles, setProfiles] = useState<EnrichedDeveloper[]>(fallbackProfiles);
   const [activeStack, setActiveStack] = useState("Todos");
   const [likedIds, setLikedIds] = useState<string[]>(() => readJsonStorage("devmatch-liked", []));
   const [passedIds, setPassedIds] = useState<string[]>(() => readJsonStorage("devmatch-passed", []));
   const [matches, setMatches] = useState<Match[]>(() => readJsonStorage("devmatch-matches", []));
+  const [lastDecision, setLastDecision] = useState<LastDecision>(null);
   const [session, setSession] = useState<UserSession | null>(null);
 
+  const filteredProfiles = useMemo(() => {
+    return profiles.filter((profile) => activeStack === "Todos" || profile.stack.includes(activeStack));
+  }, [activeStack, profiles]);
+
   const visibleProfiles = useMemo(() => {
-    return profiles.filter((profile) => {
-      const stackMatch = activeStack === "Todos" || profile.stack.includes(activeStack);
-      return stackMatch && !likedIds.includes(profile.id) && !passedIds.includes(profile.id);
-    });
-  }, [activeStack, likedIds, passedIds, profiles]);
+    return filteredProfiles.filter((profile) => !likedIds.includes(profile.id) && !passedIds.includes(profile.id));
+  }, [filteredProfiles, likedIds, passedIds]);
 
   const currentDeveloper = visibleProfiles[0];
+  const reviewedCount = Math.max(0, filteredProfiles.length - visibleProfiles.length);
+  const reviewProgress = filteredProfiles.length ? Math.round((reviewedCount / filteredProfiles.length) * 100) : 0;
 
   useEffect(() => {
     async function loadProfiles() {
@@ -87,13 +97,36 @@ export function ContractorArea() {
   }, [likedIds, session?.mode]);
 
   function likeDeveloper(id: string) {
+    const profile = profiles.find((item) => item.id === id);
     setLikedIds((current) => Array.from(new Set([...current, id])));
     setPassedIds((current) => current.filter((item) => item !== id));
+    setLastDecision({ id, name: profile?.name ?? "Candidato", kind: "like" });
   }
 
   function passDeveloper(id: string) {
+    const profile = profiles.find((item) => item.id === id);
     setPassedIds((current) => Array.from(new Set([...current, id])));
     setLikedIds((current) => current.filter((item) => item !== id));
+    setLastDecision({ id, name: profile?.name ?? "Candidato", kind: "pass" });
+  }
+
+  function undoLastDecision() {
+    if (!lastDecision) return;
+
+    if (lastDecision.kind === "like") {
+      setLikedIds((current) => current.filter((id) => id !== lastDecision.id));
+    } else {
+      setPassedIds((current) => current.filter((id) => id !== lastDecision.id));
+    }
+
+    setLastDecision(null);
+  }
+
+  function resetCurrentFilter() {
+    const ids = new Set(filteredProfiles.map((profile) => profile.id));
+    setLikedIds((current) => current.filter((id) => !ids.has(id)));
+    setPassedIds((current) => current.filter((id) => !ids.has(id)));
+    setLastDecision(null);
   }
 
   return (
@@ -110,7 +143,7 @@ export function ContractorArea() {
             <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-100">Encontrar devs</p>
             <h1 className="text-3xl font-black leading-[0.98]">Um perfil por vez. Uma decisão clara.</h1>
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              Filtre se quiser, revise o candidato e marque interesse ou passe para o próximo.
+              Compare a vaga com cada perfil, registre interesse e mantenha o contexto da conversa.
             </p>
           </section>
 
@@ -132,9 +165,39 @@ export function ContractorArea() {
 
         <section className="motion-in product-frame min-w-0">
           <div className="border-b border-white/10 p-4 sm:p-5">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">1 · Filtro opcional</p>
-            <h2 className="mt-1 text-2xl font-black text-white">Qual tecnologia é importante?</h2>
-            <p className="mt-1 text-sm text-slate-400">Deixe em “Todos” se quiser revisar a fila completa.</p>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">1 · Definir recorte</p>
+                <h2 className="mt-1 text-2xl font-black text-white">Qual tecnologia é importante?</h2>
+                <p className="mt-1 text-sm text-slate-400">Use o filtro para reduzir a fila sem esconder o contexto da vaga.</p>
+              </div>
+
+              <div className="min-w-64 rounded-xl border border-white/10 bg-black/15 p-3">
+                <div className="flex items-center justify-between gap-3 text-xs">
+                  <span className="font-bold text-slate-300">Progresso da triagem</span>
+                  <span className="font-black text-white">{reviewedCount}/{filteredProfiles.length}</span>
+                </div>
+                <div
+                  aria-label={`${reviewProgress}% da triagem concluída`}
+                  aria-valuemax={100}
+                  aria-valuemin={0}
+                  aria-valuenow={reviewProgress}
+                  className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"
+                  role="progressbar"
+                >
+                  <div className="h-full rounded-full bg-cyan-300 transition-[width] duration-300" style={{ width: `${reviewProgress}%` }} />
+                </div>
+                {lastDecision ? (
+                  <button className="mt-3 inline-flex items-center gap-2 text-xs font-black text-cyan-100 hover:text-white" onClick={undoLastDecision} type="button">
+                    <RotateCcw className="size-3.5" />
+                    Desfazer decisão sobre {lastDecision.name}
+                  </button>
+                ) : (
+                  <p className="mt-3 text-xs leading-5 text-slate-500">Você pode desfazer a última decisão a qualquer momento.</p>
+                )}
+              </div>
+            </div>
+
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {stackOptions.map((stack) => (
                 <button className={`light-chip dark-chip ${activeStack === stack ? "is-active" : ""}`} key={stack} onClick={() => setActiveStack(stack)} type="button">
@@ -145,12 +208,15 @@ export function ContractorArea() {
           </div>
 
           <div className="p-4 sm:p-5">
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">2 · Revisar candidato</p>
-                <h2 className="mt-1 text-xl font-black text-white">{currentDeveloper ? "Decida e avance para o próximo" : "Fila concluída"}</h2>
+                <h2 className="mt-1 text-xl font-black text-white">{currentDeveloper ? "Decida com contexto e avance" : "Fila concluída"}</h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  {visibleProfiles.length} {visibleProfiles.length === 1 ? "perfil restante" : "perfis restantes"} neste filtro.
+                </p>
               </div>
-              <p className="text-xs leading-5 text-slate-500">Você também pode arrastar o card para os lados.</p>
+              <p className="text-xs leading-5 text-slate-500">Use os botões ou arraste o card para os lados.</p>
             </div>
 
             {currentDeveloper ? (
@@ -159,9 +225,22 @@ export function ContractorArea() {
               </div>
             ) : (
               <div className="deck-empty">
-                <BadgeCheck className="size-8 text-cyan-100" />
-                <p className="mt-3 text-sm font-black text-white">Você revisou todos os perfis deste filtro.</p>
-                <p className="mt-1 text-sm leading-6 text-slate-400">Escolha outra tecnologia ou abra suas conversas abaixo.</p>
+                <div>
+                  <BadgeCheck className="mx-auto size-8 text-cyan-100" />
+                  <p className="mt-3 text-sm font-black text-white">Você revisou todos os perfis deste filtro.</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-400">Reabra a fila para comparar novamente ou escolha outra tecnologia.</p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                    <button className="light-button is-secondary" onClick={resetCurrentFilter} type="button">
+                      <RotateCcw className="size-4" />
+                      Rever perfis
+                    </button>
+                    {activeStack !== "Todos" ? (
+                      <button className="light-button" onClick={() => setActiveStack("Todos")} type="button">
+                        Ver fila completa
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -185,7 +264,7 @@ export function ContractorArea() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm leading-6 text-slate-400">Quando você clicar em “Tenho interesse”, a pessoa aparece aqui para continuar a conversa.</p>
+              <p className="text-sm leading-6 text-slate-400">Quando você marcar interesse, o perfil aparece aqui com acesso direto à conversa.</p>
             )}
           </DarkPanel>
         </div>
@@ -282,6 +361,7 @@ function CandidateCard({
 
   return (
     <article
+      aria-label={`Perfil de ${developer.name}`}
       className={`candidate-card ${drag.active ? "is-dragging" : ""} ${drag.leaving ? "is-leaving" : ""}`}
       onPointerCancel={handlePointerCancel}
       onPointerDown={handlePointerDown}
@@ -309,11 +389,30 @@ function CandidateCard({
             </div>
             <span className="rounded-full border border-white/10 px-2 py-1 text-[11px] font-bold text-slate-300">{developer.seniority}</span>
           </div>
-          <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-300">{developer.bio}</p>
+
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-slate-400">
+            <span className="inline-flex items-center gap-1.5"><MapPin className="size-3.5" /> {developer.location}</span>
+            <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" /> {developer.availability}</span>
+            <span>{developer.salary}</span>
+          </div>
+
+          <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-300">{developer.bio}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {developer.stack.slice(0, 5).map((skill) => (
+            {developer.stack.slice(0, 6).map((skill) => (
               <span className="rounded-full bg-white/8 px-2 py-1 text-[11px] font-bold text-slate-200" key={skill}>{skill}</span>
             ))}
+          </div>
+
+          <div className="mt-3 rounded-xl border border-cyan-300/10 bg-cyan-300/[0.045] p-3">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-cyan-100">Por que combina com a vaga</p>
+            <ul className="mt-2 space-y-1.5 text-xs leading-5 text-slate-300">
+              {developer.compatibility.reasons.slice(0, 3).map((reason) => (
+                <li className="flex gap-2" key={reason}>
+                  <BadgeCheck className="mt-0.5 size-3.5 shrink-0 text-cyan-100" />
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
