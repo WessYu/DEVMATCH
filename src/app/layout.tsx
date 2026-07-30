@@ -11,10 +11,31 @@ const geistSans = Geist({
   preload: true,
 });
 
+const title = "DevMatch — Recrutamento técnico com contexto";
+const description = "Plataforma que conecta empresas e desenvolvedores por perfil técnico, compatibilidade, projetos, matches e conversas.";
+
 export const metadata: Metadata = {
-  title: "DevMatch - Tinder de Dev + Portfólio Interativo",
-  description:
-    "Plataforma de match entre empresas e desenvolvedores com swipe, portfólio vivo, GitHub e chat.",
+  metadataBase: new URL("https://devmatch-neon.vercel.app"),
+  title,
+  description,
+  applicationName: "DevMatch",
+  openGraph: {
+    title,
+    description,
+    url: "/",
+    siteName: "DevMatch",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
