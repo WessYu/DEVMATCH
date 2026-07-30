@@ -33,6 +33,9 @@ const rippleSelector = [
   ".repo-row",
 ].join(",");
 
+const busyPattern = /(carregando|buscando|publicando|conectando|salvando|preparando|verificando|sincronizando)/i;
+const toastPattern = /(publicado|conectado|salvo|adicionada|importado|desconectado|não consegui|não foi possível|indisponível|erro)/i;
+
 function addRipple(target: HTMLElement, clientX: number, clientY: number) {
   const rect = target.getBoundingClientRect();
   const diameter = Math.max(rect.width, rect.height) * 1.8;
@@ -47,6 +50,29 @@ function addRipple(target: HTMLElement, clientX: number, clientY: number) {
   target.querySelectorAll(":scope > .ui-ripple").forEach((item) => item.remove());
   target.appendChild(ripple);
   ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
+}
+
+function createToast(text: string) {
+  document.querySelectorAll(".motion-toast").forEach((toast) => toast.remove());
+
+  const toast = document.createElement("div");
+  toast.className = "motion-toast fixed bottom-5 left-1/2 z-[140] max-w-[calc(100vw-2rem)] rounded-full border border-white/15 bg-[#11151a]/95 px-4 py-3 text-center text-sm font-black text-white shadow-2xl backdrop-blur-xl transition-all duration-300";
+  toast.setAttribute("role", "status");
+  toast.textContent = text.length > 120 ? `${text.slice(0, 117)}...` : text;
+  toast.style.opacity = "0";
+  toast.style.transform = "translate(-50%, 14px) scale(0.96)";
+
+  document.body.appendChild(toast);
+  window.requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translate(-50%, 0) scale(1)";
+  });
+
+  window.setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translate(-50%, 10px) scale(0.97)";
+  }, 2800);
+  window.setTimeout(() => toast.remove(), 3200);
 }
 
 export function MotionEnhancer({ pathname }: { pathname: string }) {
@@ -76,6 +102,9 @@ export function MotionEnhancer({ pathname }: { pathname: string }) {
     document.body.dataset.motion = "enhanced";
 
     const observed = new WeakSet<Element>();
+    let lastToastText = "";
+    let lastToastTime = 0;
+
     const revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -106,7 +135,29 @@ export function MotionEnhancer({ pathname }: { pathname: string }) {
       card.classList.toggle("is-pass-exit", x < 0);
     }
 
+    function syncLiveRegion(liveRegion: HTMLElement) {
+      const text = liveRegion.textContent?.trim() ?? "";
+      if (!text) return;
+
+      const container = liveRegion.closest<HTMLElement>(".product-frame, .compact-box");
+      if (container) {
+        if (busyPattern.test(text)) container.setAttribute("aria-busy", "true");
+        else container.removeAttribute("aria-busy");
+      }
+
+      liveRegion.classList.remove("status-pop");
+      window.requestAnimationFrame(() => liveRegion.classList.add("status-pop"));
+
+      const now = Date.now();
+      if (toastPattern.test(text) && (text !== lastToastText || now - lastToastTime > 2200)) {
+        lastToastText = text;
+        lastToastTime = now;
+        createToast(text);
+      }
+    }
+
     prepareReveals();
+    document.querySelectorAll<HTMLElement>("[aria-live]").forEach(syncLiveRegion);
 
     const mutationObserver = new MutationObserver((records) => {
       records.forEach((record) => {
@@ -118,15 +169,14 @@ export function MotionEnhancer({ pathname }: { pathname: string }) {
           });
         }
 
-        const target = record.target instanceof HTMLElement ? record.target : null;
+        const target = record.target instanceof HTMLElement
+          ? record.target
+          : record.target.parentElement;
         if (!target) return;
 
         if (record.type !== "attributes") {
           const liveRegion = target.closest<HTMLElement>("[aria-live]");
-          if (liveRegion && liveRegion.textContent?.trim()) {
-            liveRegion.classList.remove("status-pop");
-            window.requestAnimationFrame(() => liveRegion.classList.add("status-pop"));
-          }
+          if (liveRegion) syncLiveRegion(liveRegion);
         }
 
         const candidate = target.closest<HTMLElement>(".candidate-card");
@@ -185,6 +235,7 @@ export function MotionEnhancer({ pathname }: { pathname: string }) {
       delete document.body.dataset.motion;
       revealObserver.disconnect();
       mutationObserver.disconnect();
+      document.querySelectorAll(".motion-toast").forEach((toast) => toast.remove());
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("focusin", handleFocus);
