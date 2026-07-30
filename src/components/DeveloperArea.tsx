@@ -13,7 +13,7 @@ import Link from "next/link";
 import {
   CheckCircle2,
   Circle,
-  Github,
+  GitPullRequest,
   ImagePlus,
   Link2,
   MessageCircle,
@@ -545,7 +545,7 @@ export function DeveloperArea() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
                       <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/10 text-white">
-                        <Github className="size-5" />
+                        <GitPullRequest className="size-5" />
                       </span>
                       <span className="min-w-0">
                         <span className="block text-xs font-black uppercase tracking-[0.14em] text-emerald-200">GitHub conectado</span>
@@ -555,12 +555,9 @@ export function DeveloperArea() {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <button className="icon-button" disabled={githubLoading} onClick={() => {
-                        autoLoadedGithub.current = "";
-                        setPortfolio((current) => ({ ...current }));
-                      }} type="button">
+                      <button className="icon-button" disabled={githubLoading} onClick={connectGithub} type="button">
                         <Search className="size-4" />
-                        Atualizar
+                        {githubLoading ? "Atualizando..." : "Atualizar"}
                       </button>
                       <button aria-label="Desconectar GitHub" className="icon-button" onClick={disconnectGithub} type="button">
                         <Trash2 className="size-4" />
@@ -573,7 +570,7 @@ export function DeveloperArea() {
                 <div className="rounded-xl border border-white/10 bg-black/15 p-4">
                   <div className="flex items-center gap-3">
                     <span className="grid size-11 place-items-center rounded-xl bg-white/10 text-white">
-                      <Github className="size-5" />
+                      <GitPullRequest className="size-5" />
                     </span>
                     <div>
                       <p className="text-sm font-black text-white">Conectar GitHub</p>
@@ -688,7 +685,7 @@ export function DeveloperArea() {
                   </div>
                   {portfolio.github ? (
                     <a className="mt-4 inline-flex items-center gap-2 text-xs font-black text-cyan-100" href={`https://github.com/${portfolio.github}`} rel="noreferrer" target="_blank">
-                      <Github className="size-4" />
+                      <GitPullRequest className="size-4" />
                       @{portfolio.github}
                     </a>
                   ) : null}
