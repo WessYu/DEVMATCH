@@ -52,6 +52,9 @@ const technologyMatchers: Array<[string, RegExp]> = [
   ["Junior", /\bjunior\b|entry[- ]level|graduate/i],
 ];
 
+const developmentRolePattern = /\b(software|developer|development|engineer|engineering|front[ -]?end|back[ -]?end|full[ -]?stack|web|react|javascript|typescript|node|mobile|ios|android|devops|site reliability|sre|quality assurance|qa engineer|test automation|data engineer|machine learning engineer|ai engineer|cloud engineer|platform engineer|security engineer)\b/i;
+const technicalTags = new Set(["React", "Next.js", "TypeScript", "JavaScript", "Node.js", "HTML", "CSS", "Vue", "Angular", "Python", "Java", "PHP", "Ruby", "AWS"]);
+
 function decodeEntities(value: string) {
   const entities: Record<string, string> = {
     "&amp;": "&",
@@ -141,6 +144,11 @@ function normalizeJob(job: RemotiveJob): RemoteJob | null {
   };
 }
 
+function isDevelopmentJob(job: RemoteJob) {
+  const roleText = `${job.title} ${job.category}`;
+  return developmentRolePattern.test(roleText) || job.tags.some((tag) => technicalTags.has(tag));
+}
+
 function relevanceScore(job: RemoteJob, query: string) {
   const haystack = `${job.title} ${job.company} ${job.category} ${job.location} ${job.tags.join(" ")} ${job.description}`.toLowerCase();
   const tokens = query.toLowerCase().split(/\s+/).map((token) => token.trim()).filter((token) => token.length > 1);
@@ -174,7 +182,8 @@ export async function getRemoteJobs(query = "", requestedLimit = 24) {
   const payload = await response.json() as RemotiveResponse;
   const jobs = (payload.jobs ?? [])
     .map(normalizeJob)
-    .filter((job): job is RemoteJob => Boolean(job));
+    .filter((job): job is RemoteJob => Boolean(job))
+    .filter(isDevelopmentJob);
 
   const tokens = query.toLowerCase().split(/\s+/).map((token) => token.trim()).filter((token) => token.length > 1);
   const filtered = tokens.length
