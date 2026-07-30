@@ -1,10 +1,10 @@
-import { FeedArea } from "@/components/FeedArea";
+import { PolishedFeedArea } from "@/components/PolishedFeedArea";
 import { ProductShell } from "@/components/ProductShell";
 
 export default function FeedPage() {
   return (
     <ProductShell>
-      <FeedArea />
+      <PolishedFeedArea />
     </ProductShell>
   );
 }
