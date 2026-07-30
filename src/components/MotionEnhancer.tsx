@@ -121,10 +121,12 @@ export function MotionEnhancer({ pathname }: { pathname: string }) {
         const target = record.target instanceof HTMLElement ? record.target : null;
         if (!target) return;
 
-        const liveRegion = target.closest<HTMLElement>("[aria-live]");
-        if (liveRegion && liveRegion.textContent?.trim()) {
-          liveRegion.classList.remove("status-pop");
-          window.requestAnimationFrame(() => liveRegion.classList.add("status-pop"));
+        if (record.type !== "attributes") {
+          const liveRegion = target.closest<HTMLElement>("[aria-live]");
+          if (liveRegion && liveRegion.textContent?.trim()) {
+            liveRegion.classList.remove("status-pop");
+            window.requestAnimationFrame(() => liveRegion.classList.add("status-pop"));
+          }
         }
 
         const candidate = target.closest<HTMLElement>(".candidate-card");
