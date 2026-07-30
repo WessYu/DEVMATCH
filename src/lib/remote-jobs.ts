@@ -53,6 +53,7 @@ const technologyMatchers: Array<[string, RegExp]> = [
 ];
 
 const developmentRolePattern = /\b(software|developer|development|engineer|engineering|front[ -]?end|back[ -]?end|full[ -]?stack|web|react|javascript|typescript|node|mobile|ios|android|devops|site reliability|sre|quality assurance|qa engineer|test automation|data engineer|machine learning engineer|ai engineer|cloud engineer|platform engineer|security engineer)\b/i;
+const excludedRolePattern = /\b(business development|sales|marketing|account executive|customer success|customer support|recruiter|talent acquisition|office assistant|administrative|graphic designer|copywriter|content writer|data labeling)\b/i;
 const technicalTags = new Set(["React", "Next.js", "TypeScript", "JavaScript", "Node.js", "HTML", "CSS", "Vue", "Angular", "Python", "Java", "PHP", "Ruby", "AWS"]);
 
 function decodeEntities(value: string) {
@@ -146,6 +147,7 @@ function normalizeJob(job: RemotiveJob): RemoteJob | null {
 
 function isDevelopmentJob(job: RemoteJob) {
   const roleText = `${job.title} ${job.category}`;
+  if (excludedRolePattern.test(roleText)) return false;
   return developmentRolePattern.test(roleText) || job.tags.some((tag) => technicalTags.has(tag));
 }
 
