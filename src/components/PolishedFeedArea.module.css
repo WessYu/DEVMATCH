@@ -1,0 +1,401 @@
+.shell {
+  --feed-cyan: #8bdcf7;
+  --feed-paper: #eef2f5;
+  --feed-muted: #98a4b3;
+  --feed-line: rgba(255, 255, 255, 0.1);
+  --feed-surface: rgba(255, 255, 255, 0.045);
+  width: 100%;
+}
+
+.shell > :global(div.grid) {
+  align-items: start;
+}
+
+.shell :global(aside) {
+  gap: 0.75rem;
+}
+
+.shell :global(aside > section:first-child) {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.13);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025) 58%),
+    rgba(10, 12, 14, 0.72);
+  padding: 1.15rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.shell :global(aside > section:first-child::before) {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--feed-cyan), transparent 72%);
+  opacity: 0.9;
+}
+
+.shell :global(aside > section:first-child h1) {
+  max-width: 11ch;
+  letter-spacing: -0.045em;
+}
+
+.shell :global(.compact-box) {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0.9rem;
+  box-shadow: none;
+}
+
+.shell :global(.compact-box:hover) {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.shell :global(.product-frame) {
+  border-color: rgba(255, 255, 255, 0.11);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 18%),
+    rgba(9, 11, 13, 0.76);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.shell :global(.product-frame > div:first-child) {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.shell :global(.product-frame h2) {
+  letter-spacing: -0.035em;
+}
+
+.shell :global(.chat-role) {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  padding-inline: 0.9rem;
+  color: #aeb8c5;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.shell :global(.chat-role:hover) {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+  color: #ffffff;
+}
+
+.shell :global(.chat-role.is-active) {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--feed-paper);
+  color: #101214;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.shell :global(.field) {
+  min-height: 46px;
+  border-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.28);
+  padding-inline: 0.9rem;
+  font-size: 0.86rem;
+}
+
+.shell :global(.field:hover) {
+  border-color: rgba(255, 255, 255, 0.17);
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.shell :global(.field:focus) {
+  border-color: rgba(139, 220, 247, 0.52);
+  background: rgba(0, 0, 0, 0.38);
+  box-shadow: 0 0 0 3px rgba(139, 220, 247, 0.08);
+}
+
+.shell :global(.light-button) {
+  min-height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 0.75rem;
+  background: var(--feed-paper);
+  color: #101214;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.shell :global(.light-button:hover:not(:disabled)) {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.shell :global(.icon-button) {
+  min-width: 46px;
+  min-height: 46px;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.shell :global(.icon-button:hover:not(:disabled)) {
+  border-color: rgba(139, 220, 247, 0.32);
+  background: rgba(139, 220, 247, 0.08);
+}
+
+.shell :global(.light-chip.dark-chip) {
+  min-height: 31px;
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+  padding-inline: 0.75rem;
+  color: #aeb8c5;
+  font-size: 0.71rem;
+}
+
+.shell :global(.light-chip.dark-chip:hover) {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.shell :global(.light-chip.dark-chip.is-active) {
+  border-color: rgba(139, 220, 247, 0.32);
+  background: rgba(139, 220, 247, 0.12);
+  color: #dff7ff;
+  box-shadow: inset 0 0 0 1px rgba(139, 220, 247, 0.03);
+}
+
+.shell :global(.internet-job-card) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.09);
+  border-radius: 1.05rem;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.055), transparent 46%),
+    rgba(255, 255, 255, 0.025);
+  padding: 1rem;
+  box-shadow: none;
+  content-visibility: auto;
+  contain-intrinsic-size: 420px;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.shell :global(.internet-job-card::before) {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139, 220, 247, 0.58), transparent);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.shell :global(.internet-job-card:hover) {
+  border-color: rgba(139, 220, 247, 0.22);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.07), transparent 46%),
+    rgba(255, 255, 255, 0.035);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  transform: translateY(-2px);
+}
+
+.shell :global(.internet-job-card:hover::before) {
+  opacity: 1;
+}
+
+.shell :global(.internet-job-card > div:first-child > div:first-child) {
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.shell :global(.internet-job-card h3) {
+  letter-spacing: -0.025em;
+}
+
+.shell :global(.internet-job-card .feed-kind.is-job) {
+  min-height: 23px;
+  border: 1px solid rgba(139, 220, 247, 0.18);
+  background: rgba(139, 220, 247, 0.09);
+  color: #dff7ff;
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+}
+
+.shell :global(.internet-job-card > div:nth-of-type(2)) {
+  gap: 0.45rem;
+}
+
+.shell :global(.internet-job-card > div:nth-of-type(2) > span) {
+  min-height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 0 0.65rem;
+  color: #aeb8c5;
+}
+
+.shell :global(.internet-job-card > p.mt-4) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  color: #bdc6d1;
+}
+
+.shell :global(.internet-job-card details) {
+  border-color: rgba(255, 255, 255, 0.08);
+  border-radius: 0.85rem;
+  background: rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.shell :global(.internet-job-card details[open]) {
+  border-color: rgba(139, 220, 247, 0.18);
+  background: rgba(0, 0, 0, 0.27);
+}
+
+.shell :global(.internet-job-card summary) {
+  list-style: none;
+  color: #cbd3dc;
+}
+
+.shell :global(.internet-job-card summary::-webkit-details-marker) {
+  display: none;
+}
+
+.shell :global(.internet-job-card summary::after) {
+  content: "+";
+  float: right;
+  color: var(--feed-cyan);
+  font-size: 0.9rem;
+}
+
+.shell :global(.internet-job-card details[open] summary::after) {
+  content: "−";
+}
+
+.shell :global(.internet-job-card > div:nth-last-of-type(2) span) {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.035);
+  color: #c5ced8;
+}
+
+.shell :global(.internet-job-card .nav-cta) {
+  min-height: 36px;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: var(--feed-paper);
+  color: #101214;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.shell :global(.internet-job-card .nav-cta:hover) {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: #ffffff;
+}
+
+.shell :global(.feed-card:not(.internet-job-card)) {
+  border-color: rgba(255, 255, 255, 0.09);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.shell :global(.feed-card:not(.internet-job-card):hover) {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+  transform: translateY(-1px);
+}
+
+.shell :global(.feed-composer) {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.9rem;
+}
+
+.shell :global(.motion-skeleton) {
+  border-radius: 1.05rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.shell :global(button:focus-visible),
+.shell :global(a:focus-visible),
+.shell :global(input:focus-visible),
+.shell :global(textarea:focus-visible),
+.shell :global(summary:focus-visible) {
+  outline: 2px solid rgba(139, 220, 247, 0.68);
+  outline-offset: 3px;
+}
+
+@media (min-width: 1280px) {
+  .shell > :global(div.grid) {
+    grid-template-columns: 272px minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .shell :global(aside) {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .shell :global(.product-frame > div:first-child > div) {
+    align-items: stretch;
+  }
+
+  .shell :global(.product-frame > div:first-child > div > div:last-child) {
+    width: 100%;
+  }
+
+  .shell :global(.product-frame > div:first-child .chat-role) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell :global(aside > section:first-child) {
+    padding: 1rem;
+  }
+
+  .shell :global(aside > section:first-child h1) {
+    max-width: 15ch;
+    font-size: 1.75rem;
+  }
+
+  .shell :global(.product-frame) {
+    border-radius: 1.1rem;
+  }
+
+  .shell :global(.internet-job-card) {
+    padding: 0.9rem;
+  }
+
+  .shell :global(.internet-job-card > div:nth-of-type(2)) {
+    gap: 0.4rem;
+  }
+
+  .shell :global(.internet-job-card > div:nth-of-type(2) > span) {
+    min-height: 26px;
+    padding-inline: 0.55rem;
+    font-size: 0.67rem;
+  }
+
+  .shell :global(.internet-job-card .nav-cta) {
+    width: 100%;
+  }
+}
