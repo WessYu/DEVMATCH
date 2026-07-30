@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BriefcaseBusiness, Code2, Home, MessageCircle, PanelTop } from "lucide-react";
 import { DevMatchLogo } from "@/components/DevMatchLogo";
+import { MotionEnhancer } from "@/components/MotionEnhancer";
 import { apiPath, readJsonStorage, type UserSession } from "@/lib/client-utils";
 
 const visitorNav = [
@@ -85,6 +86,8 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
 
   return (
     <main className="app-shell min-h-screen text-[#f4f7fb]">
+      <MotionEnhancer pathname={pathname} />
+
       <a
         className="sr-only fixed left-4 top-4 z-50 rounded-lg bg-white px-4 py-2 font-bold text-black focus:not-sr-only"
         href="#workspace-content"
@@ -96,6 +99,9 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
         <span className="ambient-streak ambient-streak-a" />
         <span className="ambient-streak ambient-streak-b" />
         <span className="ambient-streak ambient-streak-c" />
+        <span className="ambient-orb ambient-orb-a" />
+        <span className="ambient-orb ambient-orb-b" />
+        <span className="ambient-orb ambient-orb-c" />
       </div>
 
       <section className="workspace-stage">
@@ -128,7 +134,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
 
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.055] p-1.5 pr-3">
+            <div className="account-chip flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.055] p-1.5 pr-3">
               <span className="grid size-8 shrink-0 place-items-center rounded-full bg-cyan-300 text-[11px] font-black text-[#111111]">
                 {session ? initials(session.name) : "DM"}
               </span>
@@ -141,7 +147,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <div className="workspace-content" id="workspace-content">{children}</div>
+          <div className="workspace-content page-transition" id="workspace-content" key={pathname}>{children}</div>
         </div>
       </section>
     </main>
