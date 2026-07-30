@@ -10,6 +10,9 @@ const revealSelector = [
   ".repo-row",
   ".match-row",
   ".candidate-card",
+  ".feed-card",
+  ".internet-job-card",
+  ".motion-skeleton",
   "article.rounded-xl",
 ].join(",");
 
@@ -20,6 +23,8 @@ const spotlightSelector = [
   ".candidate-card",
   ".repo-row",
   ".match-row",
+  ".feed-card",
+  ".internet-job-card",
 ].join(",");
 
 const rippleSelector = [
@@ -31,6 +36,9 @@ const rippleSelector = [
   ".light-chip",
   ".match-row",
   ".repo-row",
+  ".nav-cta",
+  ".nav-tab",
+  ".chat-role",
 ].join(",");
 
 const busyPattern = /(carregando|buscando|publicando|conectando|salvando|preparando|verificando|sincronizando)/i;
