@@ -104,7 +104,7 @@ function normalizeJobType(value: string) {
   };
 
   const fallback = value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()).trim();
-  return labels[value] ?? fallback || "Não informado";
+  return labels[value] ?? (fallback || "Não informado");
 }
 
 function extractTags(job: RemotiveJob, description: string) {
